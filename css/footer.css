@@ -1,0 +1,143 @@
+/* footer.css - Footer Styling */
+
+.footer {
+  background-color: var(--deep-rose);
+  color: var(--velvet-cream);
+  padding: 48px 0 24px;
+  border-top: 1px solid rgba(212, 168, 83, 0.2); /* Champagne Gold with opacity */
+  font-family: var(--font-body);
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 992px) {
+  .footer__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .footer__grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Footer Logo */
+.footer-logo {
+  align-items: flex-start;
+}
+
+.footer-logo .logo__main {
+  color: var(--ivory-white);
+  font-size: 1.5rem;
+}
+
+.footer-logo .logo__sub {
+  color: var(--champagne-gold);
+}
+
+.footer__desc {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  opacity: 0.8;
+  max-width: 280px;
+}
+
+.footer__title {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--champagne-gold);
+  letter-spacing: 1px;
+}
+
+.footer__links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer__link {
+  font-size: 0.85rem;
+  transition: color var(--transition-fast), padding-left var(--transition-fast);
+  opacity: 0.8;
+}
+
+.footer__link:hover {
+  color: var(--champagne-gold);
+  padding-left: 4px;
+  opacity: 1;
+}
+
+.footer__contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.footer__socials {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.footer__social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-round);
+  background-color: rgba(253, 248, 244, 0.1);
+  color: var(--ivory-white);
+  transition: all var(--transition-fast);
+}
+
+.footer__social-btn:hover {
+  background-color: var(--champagne-gold);
+  color: var(--deep-charcoal);
+  transform: translateY(-2px);
+}
+
+.footer__social-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* Footer Bottom */
+.footer__bottom {
+  border-top: 1px solid rgba(253, 248, 244, 0.1);
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.footer__bottom-links {
+  display: flex;
+  gap: 16px;
+}
+
+.footer__bottom-link:hover {
+  color: var(--champagne-gold);
+}

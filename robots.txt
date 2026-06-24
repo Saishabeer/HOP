@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Disallow raw data file discovery
+Disallow: /data/
+
+# Sitemap location
+Sitemap: https://www.houseofprimecollections.com/sitemap.xml

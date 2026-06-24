@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Policies | House of Prime Collections - Shipping & Returns</title>
+  <meta name="description" content="Read our policies. Details on flat-rate shipping, free shipping thresholds, and our return/exchange conditions.">
+  
+  <!-- CSS Style Files -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .policy-container {
+      max-width: 800px;
+      margin: 24px auto 64px auto;
+    }
+    
+    /* Tabs styling */
+    .tabs-nav {
+      display: flex;
+      border-bottom: 2px solid var(--velvet-cream);
+      margin-bottom: 32px;
+      gap: 16px;
+    }
+    .tab-btn {
+      padding: 12px 24px;
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--warm-gray);
+      cursor: pointer;
+      position: relative;
+      background: none;
+      border: none;
+      transition: color var(--transition-fast);
+    }
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: transparent;
+      transition: background-color var(--transition-fast);
+    }
+    .tab-btn.active {
+      color: var(--primary-rose);
+    }
+    .tab-btn.active::after {
+      background-color: var(--primary-rose);
+    }
+    
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+    
+    .policy-text h2 {
+      font-family: var(--font-heading);
+      color: var(--primary-rose);
+      font-size: 1.4rem;
+      margin-top: 24px;
+      margin-bottom: 12px;
+    }
+    .policy-text p, .policy-text ul {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--deep-charcoal);
+      margin-bottom: 16px;
+    }
+    .policy-text ul {
+      padding-left: 20px;
+      list-style-type: disc;
+    }
+    .policy-text li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER / NAVIGATION BAR -->
+  <header class="header">
+    <div class="container header__nav">
+      <a href="index.html" class="logo" id="site-logo">
+        <span class="logo__main">HOUSE OF PRIME</span>
+        <span class="logo__sub">COLLECTIONS</span>
+      </a>
+
+      <button class="hamburger" aria-label="Toggle Navigation menu" aria-expanded="false">
+        <span class="hamburger__line"></span>
+        <span class="hamburger__line"></span>
+        <span class="hamburger__line"></span>
+      </button>
+
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-menu__link">Home</a>
+        <a href="shop.html" class="nav-menu__link">Shop</a>
+        <a href="about.html" class="nav-menu__link">About Us</a>
+        <a href="contact.html" class="nav-menu__link">Contact</a>
+        <a href="faq.html" class="nav-menu__link">FAQs</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="shop.html" class="nav-actions__btn" aria-label="Search Catalog">
+          <svg viewBox="0 0 24 24">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+        </a>
+        <a href="cart.html" class="nav-actions__btn cart-badge-container" aria-label="View Cart">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.9 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+          <span class="cart-badge" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN PAGE CONTENT -->
+  <main class="container">
+    
+    <!-- BREADCRUMBS -->
+    <div class="breadcrumbs">
+      <a href="index.html">Home</a>
+      <span>&gt;</span>
+      <span>Store Policies</span>
+    </div>
+
+    <!-- POLICY LAYOUT -->
+    <div class="policy-container">
+      
+      <!-- Tabs Navigation -->
+      <nav class="tabs-nav">
+        <button class="tab-btn active" data-tab="shipping">Shipping Policy</button>
+        <button class="tab-btn" data-tab="returns">Returns & Exchanges</button>
+      </nav>
+
+      <!-- Panel 1: Shipping -->
+      <div class="tab-panel active policy-text" id="panel-shipping">
+        <h1>Shipping Policy</h1>
+        <p>At House of Prime Collections, we strive to deliver your handpicked jewelry in pristine condition. Please read below for our shipping processes and flat-rate charges:</p>
+        
+        <h2>Shipping Costs & Thresholds</h2>
+        <ul>
+          <li>We charge a flat shipping and handling fee of <strong>Rs.60</strong> for orders delivered within India.</li>
+          <li>Orders with a subtotal value of <strong>Rs.500 or more</strong> qualify for <strong>FREE shipping</strong>.</li>
+        </ul>
+
+        <h2>Delivery Timelines</h2>
+        <p>Orders are dispatched from our hub in Mumbai within 24 to 48 hours of order confirmation. Estimated delivery durations are as follows:</p>
+        <ul>
+          <li><strong>Metro Cities:</strong> 3 - 5 business days</li>
+          <li><strong>Rest of India:</strong> 5 - 7 business days</li>
+        </ul>
+        <p>Once dispatched, we share courier tracking details directly with you on your WhatsApp thread so you can follow your shipment's journey.</p>
+      </div>
+
+      <!-- Panel 2: Returns -->
+      <div class="tab-panel policy-text" id="panel-returns">
+        <h1>Returns & Exchange Policy</h1>
+        <p>Due to the personal nature of fashion accessories and hygiene reasons, our store policies are strict regarding returns:</p>
+
+        <h2>Exchange/Return Exceptions</h2>
+        <ul>
+          <li>We do <strong>not</strong> accept returns, cancellations, or exchanges based on color preferences, size mismatches, or change of mind. Please check sizes and descriptions carefully before placing orders.</li>
+          <li>We offer replacements or refunds <strong>only</strong> if you received a damaged product or the wrong item.</li>
+        </ul>
+
+        <h2>Claiming a Damaged Delivery</h2>
+        <p>If your package arrives damaged, please execute the following steps to process your claim:</p>
+        <ul>
+          <li>Reach out to our support chat on WhatsApp within <strong>24 hours</strong> of receiving delivery.</li>
+          <li>You <strong>must provide a continuous, unedited unboxing video</strong> showing the outer package opening and displaying the damaged item clearly.</li>
+          <li>Once our quality checking team verifies the video, we will ship a replacement item free of charge. If the same design is out of stock, we will issue a full refund to your UPI account.</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__grid">
+      
+      <!-- Brand column -->
+      <div class="footer__col">
+        <a href="index.html" class="logo footer-logo">
+          <span class="logo__main">HOUSE OF PRIME</span>
+          <span class="logo__sub">COLLECTIONS</span>
+        </a>
+        <p class="footer__desc">Your destination for premium Korean fashion jewelry. Elevating everyday styles with refined elegance since 2025.</p>
+        <div class="footer__socials">
+          <a href="https://instagram.com" class="footer__social-btn" aria-label="Instagram">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div class="footer__col">
+        <h3 class="footer__title">Quick Links</h3>
+        <div class="footer__links">
+          <a href="index.html" class="footer__link">Home</a>
+          <a href="shop.html" class="footer__link">Shop Catalog</a>
+          <a href="about.html" class="footer__link">About Us</a>
+          <a href="contact.html" class="footer__link">Contact Us</a>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="footer__col">
+        <h3 class="footer__title">Categories</h3>
+        <div class="footer__links">
+          <a href="shop.html?category=Korean%20Earrings" class="footer__link">Korean Earrings</a>
+          <a href="shop.html?category=Stud%20Earrings" class="footer__link">Stud Earrings</a>
+          <a href="shop.html?category=Fancy%20Earrings" class="footer__link">Fancy Accessories</a>
+        </div>
+      </div>
+
+      <!-- Contact details -->
+      <div class="footer__col">
+        <h3 class="footer__title">Get In Touch</h3>
+        <div class="footer__contact-info">
+          <p style="margin-bottom: 8px;">For orders, custom requests & styling inquiries:</p>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <svg style="width: 16px; height: 16px; fill: var(--champagne-gold);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.01-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            +91 98765 43210 (WhatsApp)
+          </span>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <svg style="width: 16px; height: 16px; fill: var(--champagne-gold);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            hello@houseofprime.com
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="container footer__bottom">
+      <span>&copy; 2026 House of Prime Collections. All rights reserved.</span>
+      <div class="footer__bottom-links">
+        <a href="policy.html?tab=shipping" class="footer__bottom-link">Shipping Policy</a>
+        <a href="policy.html?tab=returns" class="footer__bottom-link">Returns Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- FLOATING WHATSAPP BUTTON -->
+  <a href="#" class="whatsapp-float" aria-label="Chat with us on WhatsApp" target="_blank">
+    <svg viewBox="0 0 24 24">
+      <path d="M12.012 2.163c-5.419 0-9.829 4.41-9.829 9.829 0 1.732.451 3.42 1.309 4.912L2.163 22.16l5.309-1.393c1.444.787 3.073 1.203 4.54 1.203h.001c5.421 0 9.83-4.411 9.83-9.83 0-2.628-1.023-5.097-2.88-6.956-1.857-1.858-4.325-2.88-6.951-2.88zm4.992 13.916c-.274.773-1.353 1.411-1.854 1.503-.496.091-.989.176-3.177-.729-2.796-1.156-4.597-4.004-4.737-4.188-.139-.186-1.134-1.509-1.134-2.879 0-1.37.718-2.043.973-2.317.254-.274.556-.342.742-.342h.53c.159 0 .373-.06.583.456.219.539.752 1.839.818 1.975.066.136.109.294.018.474-.09.18-.136.294-.273.456-.136.162-.284.359-.406.49-.136.147-.278.307-.119.581.159.273.707 1.166 1.517 1.888 1.044.93 1.92 1.218 2.193 1.354.273.136.43.113.59-.071.16-.184.685-.798.868-1.071.182-.273.364-.227.614-.136.251.091 1.597.752 1.87 1.026.273.273.455.41.523.525.068.115.068.66-.206 1.433z"/>
+    </svg>
+  </a>
+
+  <!-- core scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/whatsapp.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabs = document.querySelectorAll('.tab-btn');
+      const panels = document.querySelectorAll('.tab-panel');
+      const waBtn = document.querySelector('.whatsapp-float');
+      
+      if (waBtn) {
+        waBtn.href = WhatsApp.getGeneralChatUrl();
+        waBtn.target = '_blank';
+      }
+
+      function activateTab(tabId) {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        
+        const targetBtn = document.querySelector(`[data-tab="${tabId}"]`);
+        const targetPanel = document.getElementById(`panel-${tabId}`);
+        
+        if (targetBtn && targetPanel) {
+          targetBtn.classList.add('active');
+          targetPanel.classList.add('active');
+        }
+      }
+
+      // Check URL query parameters
+      const params = new URLSearchParams(window.location.search);
+      const activeTabParam = params.get('tab');
+      if (activeTabParam === 'returns') {
+        activateTab('returns');
+      } else {
+        activateTab('shipping');
+      }
+
+      // Attach click listeners to tabs
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.getAttribute('data-tab');
+          activateTab(tabId);
+          // Sync URL history state
+          const newUrl = `${window.location.pathname}?tab=${tabId}`;
+          window.history.replaceState({}, '', newUrl);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

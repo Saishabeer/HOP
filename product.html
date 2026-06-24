@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details | House of Prime Collections - Korean Jewelry</title>
+  <meta name="description" content="Explore details, price, materials, and colors of our premium Korean fashion accessories. Order on WhatsApp with ease.">
+  
+  <!-- CSS Style Files -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/footer.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/product.css">
+</head>
+<body>
+
+  <!-- HEADER / NAVIGATION BAR -->
+  <header class="header">
+    <div class="container header__nav">
+      <a href="index.html" class="logo" id="site-logo">
+        <span class="logo__main">HOUSE OF PRIME</span>
+        <span class="logo__sub">COLLECTIONS</span>
+      </a>
+
+      <button class="hamburger" aria-label="Toggle Navigation menu" aria-expanded="false">
+        <span class="hamburger__line"></span>
+        <span class="hamburger__line"></span>
+        <span class="hamburger__line"></span>
+      </button>
+
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-menu__link">Home</a>
+        <a href="shop.html" class="nav-menu__link active">Shop</a>
+        <a href="about.html" class="nav-menu__link">About Us</a>
+        <a href="contact.html" class="nav-menu__link">Contact</a>
+        <a href="faq.html" class="nav-menu__link">FAQs</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="shop.html" class="nav-actions__btn" aria-label="Search Catalog">
+          <svg viewBox="0 0 24 24">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+        </a>
+        <a href="cart.html" class="nav-actions__btn cart-badge-container" aria-label="View Cart">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.9 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+          <span class="cart-badge" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN PAGE CONTENT -->
+  <main class="container">
+    
+    <!-- BREADCRUMBS -->
+    <div class="breadcrumbs">
+      <a href="index.html">Home</a>
+      <span>&gt;</span>
+      <a href="shop.html">Shop Catalog</a>
+      <span>&gt;</span>
+      <span id="breadcrumb-product-name" style="color: var(--primary-rose);">Product Details</span>
+    </div>
+
+    <!-- PRODUCT DETAIL SPLIT LAYOUT -->
+    <div class="product-detail" id="product-detail-container">
+      
+      <!-- GALLERY COL -->
+      <div class="gallery">
+        <div class="gallery__main-container" id="main-gallery-container">
+          <img class="gallery__main-img" id="main-gallery-img" src="" alt="Product view" fetchpriority="high">
+        </div>
+        <div class="gallery__thumbnails" id="thumbnails-container">
+          <!-- Thumbnail strip loaded by JS -->
+        </div>
+      </div>
+
+      <!-- INFO COL -->
+      <div class="product-info">
+        <div>
+          <h1 class="product-info__title" id="product-title">Loading Product...</h1>
+          <span class="product-info__model" id="product-model">Model: ---</span>
+        </div>
+
+        <!-- Stock Indicator -->
+        <div class="product-info__stock">
+          <span class="stock-dot" id="stock-indicator-dot"></span>
+          <span id="stock-indicator-text">Checking availability...</span>
+        </div>
+
+        <!-- Pricing Display -->
+        <div class="price-display" id="price-container">
+          <!-- Current price / discount -->
+        </div>
+
+        <!-- Description -->
+        <p class="product-info__desc" id="product-desc">
+          Fetching product description details from catalog...
+        </p>
+
+        <!-- Product Specs list -->
+        <div class="specs-table">
+          <div class="specs-row">
+            <span class="specs-label">Material:</span>
+            <span class="specs-val" id="spec-material">---</span>
+          </div>
+          <div class="specs-row">
+            <span class="specs-label">Color:</span>
+            <span class="specs-val" id="spec-color">---</span>
+          </div>
+          <div class="specs-row">
+            <span class="specs-label">Weight:</span>
+            <span class="specs-val" id="spec-weight">---</span>
+          </div>
+        </div>
+
+        <!-- Quantity Selector & Actions -->
+        <div class="product-actions">
+          
+          <div class="action-row">
+            <span class="specs-label" style="font-family: var(--font-ui); font-size: 0.9rem; font-weight: 700; width: auto; margin-right: 8px;">Quantity:</span>
+            
+            <div class="stepper">
+              <button class="stepper__btn" id="qty-minus" aria-label="Decrease quantity">&minus;</button>
+              <input type="number" class="stepper__input" id="qty-input" value="1" min="1" aria-label="Order quantity">
+              <button class="stepper__btn" id="qty-plus" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+
+          <div class="action-row" style="margin-top: 8px;">
+            <button class="btn btn-primary" id="btn-add-to-cart" style="flex: 1.2;">Add to Cart</button>
+            <button class="btn btn-outline" id="btn-buy-now" style="flex: 1;">Buy Now</button>
+          </div>
+
+          <button class="btn btn-wa-order btn-block" id="btn-wa-quick">
+            <svg style="width: 20px; height: 20px; fill: currentColor; margin-right: 4px;" viewBox="0 0 24 24">
+              <path d="M12.012 2.163c-5.419 0-9.829 4.41-9.829 9.829 0 1.732.451 3.42 1.309 4.912L2.163 22.16l5.309-1.393c1.444.787 3.073 1.203 4.54 1.203h.001c5.421 0 9.83-4.411 9.83-9.83 0-2.628-1.023-5.097-2.88-6.956-1.857-1.858-4.325-2.88-6.951-2.88zm4.992 13.916c-.274.773-1.353 1.411-1.854 1.503-.496.091-.989.176-3.177-.729-2.796-1.156-4.597-4.004-4.737-4.188-.139-.186-1.134-1.509-1.134-2.879 0-1.37.718-2.043.973-2.317.254-.274.556-.342.742-.342h.53c.159 0 .373-.06.583.456.219.539.752 1.839.818 1.975.066.136.109.294.018.474-.09.18-.136.294-.273.456-.136.162-.284.359-.406.49-.136.147-.278.307-.119.581.159.273.707 1.166 1.517 1.888 1.044.93 1.92 1.218 2.193 1.354.273.136.43.113.59-.071.16-.184.685-.798.868-1.071.182-.273.364-.227.614-.136.251.091 1.597.752 1.87 1.026.273.273.455.41.523.525.068.115.068.66-.206 1.433z"/>
+            </svg>
+            Quick Order on WhatsApp
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RELATED PRODUCTS SECTION -->
+    <section class="related-section">
+      <h2 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 24px; color: var(--primary-rose);">You May Also Like</h2>
+      <div class="product-row" id="related-row">
+        <!-- Loaded Dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__grid">
+      
+      <!-- Brand column -->
+      <div class="footer__col">
+        <a href="index.html" class="logo footer-logo">
+          <span class="logo__main">HOUSE OF PRIME</span>
+          <span class="logo__sub">COLLECTIONS</span>
+        </a>
+        <p class="footer__desc">Your destination for premium Korean fashion jewelry. Elevating everyday styles with refined elegance since 2025.</p>
+        <div class="footer__socials">
+          <a href="https://instagram.com" class="footer__social-btn" aria-label="Instagram">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div class="footer__col">
+        <h3 class="footer__title">Quick Links</h3>
+        <div class="footer__links">
+          <a href="index.html" class="footer__link">Home</a>
+          <a href="shop.html" class="footer__link">Shop Catalog</a>
+          <a href="about.html" class="footer__link">About Us</a>
+          <a href="contact.html" class="footer__link">Contact Us</a>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="footer__col">
+        <h3 class="footer__title">Categories</h3>
+        <div class="footer__links">
+          <a href="shop.html?category=Korean%20Earrings" class="footer__link">Korean Earrings</a>
+          <a href="shop.html?category=Stud%20Earrings" class="footer__link">Stud Earrings</a>
+          <a href="shop.html?category=Fancy%20Earrings" class="footer__link">Fancy Accessories</a>
+        </div>
+      </div>
+
+      <!-- Contact details -->
+      <div class="footer__col">
+        <h3 class="footer__title">Get In Touch</h3>
+        <div class="footer__contact-info">
+          <p style="margin-bottom: 8px;">For orders, custom requests & styling inquiries:</p>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <svg style="width: 16px; height: 16px; fill: var(--champagne-gold);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.01-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            +91 98765 43210 (WhatsApp)
+          </span>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <svg style="width: 16px; height: 16px; fill: var(--champagne-gold);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            hello@houseofprime.com
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="container footer__bottom">
+      <span>&copy; 2026 House of Prime Collections. All rights reserved.</span>
+      <div class="footer__bottom-links">
+        <a href="policy.html?tab=shipping" class="footer__bottom-link">Shipping Policy</a>
+        <a href="policy.html?tab=returns" class="footer__bottom-link">Returns Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- FLOATING WHATSAPP BUTTON -->
+  <a href="#" class="whatsapp-float" aria-label="Chat with us on WhatsApp" target="_blank">
+    <svg viewBox="0 0 24 24">
+      <path d="M12.012 2.163c-5.419 0-9.829 4.41-9.829 9.829 0 1.732.451 3.42 1.309 4.912L2.163 22.16l5.309-1.393c1.444.787 3.073 1.203 4.54 1.203h.001c5.421 0 9.83-4.411 9.83-9.83 0-2.628-1.023-5.097-2.88-6.956-1.857-1.858-4.325-2.88-6.951-2.88zm4.992 13.916c-.274.773-1.353 1.411-1.854 1.503-.496.091-.989.176-3.177-.729-2.796-1.156-4.597-4.004-4.737-4.188-.139-.186-1.134-1.509-1.134-2.879 0-1.37.718-2.043.973-2.317.254-.274.556-.342.742-.342h.53c.159 0 .373-.06.583.456.219.539.752 1.839.818 1.975.066.136.109.294.018.474-.09.18-.136.294-.273.456-.136.162-.284.359-.406.49-.136.147-.278.307-.119.581.159.273.707 1.166 1.517 1.888 1.044.93 1.92 1.218 2.193 1.354.273.136.43.113.59-.071.16-.184.685-.798.868-1.071.182-.273.364-.227.614-.136.251.091 1.597.752 1.87 1.026.273.273.455.41.523.525.068.115.068.66-.206 1.433z"/>
+    </svg>
+  </a>
+
+  <!-- core scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/whatsapp.js"></script>
+  <script src="js/zoom.js"></script>
+  <script src="js/product.js"></script>
+</body>
+</html>
