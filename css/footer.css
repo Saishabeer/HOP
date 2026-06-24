@@ -82,6 +82,10 @@
   opacity: 1;
 }
 
+.footer p {
+  color: inherit;
+}
+
 .footer__contact-info {
   display: flex;
   flex-direction: column;
@@ -141,3 +145,4 @@
 .footer__bottom-link:hover {
   color: var(--champagne-gold);
 }
+

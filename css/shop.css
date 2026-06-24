@@ -254,7 +254,7 @@
   border-bottom: 1px solid var(--velvet-cream);
   display: flex;
   justify-content: space-between;
-  align-center: center;
+  align-items: center;
 }
 
 .filter-drawer__title {
