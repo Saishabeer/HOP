@@ -148,10 +148,16 @@
         <!-- CATALOG HEADER -->
         <div class="catalog-header" id="catalog-header">
           <span class="catalog-header__count" id="catalog-count">Showing 0 products</span>
-          
-          <!-- Desktop Sort dropdown (hidden on mobile) -->
-          <div class="sort-select-wrapper" style="display: none;">
-            <!-- Handled inline dynamically based on display queries -->
+
+          <!-- Desktop Sort dropdown (hidden on mobile, shown on desktop) -->
+          <div class="sort-select-wrapper desktop-sort-wrapper">
+            <select class="sort-select" id="sort-select-desktop" aria-label="Sort products">
+              <option value="featured">Sort by: Featured</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="newest">New Arrivals First</option>
+              <option value="best">Best Sellers First</option>
+            </select>
           </div>
         </div>
 

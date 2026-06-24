@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/footer.css">
   <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/cart.css">
   <link rel="stylesheet" href="css/checkout.css">
 </head>
 <body>
@@ -33,7 +34,7 @@
 
       <nav class="nav-menu">
         <a href="index.html" class="nav-menu__link">Home</a>
-        <a href="shop.html" class="nav-menu__link">Shop</a>
+        <a href="shop.html" class="nav-menu__link active">Shop</a>
         <a href="about.html" class="nav-menu__link">About Us</a>
         <a href="contact.html" class="nav-menu__link">Contact</a>
         <a href="faq.html" class="nav-menu__link">FAQs</a>
@@ -100,7 +101,7 @@
           </div>
 
           <!-- City -->
-          <div class="form-group">
+          <div class="form-group form-group--full">
             <label for="shipping-city" class="form-label">City *</label>
             <input type="text" id="shipping-city" class="form-input" placeholder="e.g. Mumbai" required>
           </div>
@@ -111,9 +112,9 @@
             <input type="text" id="shipping-state" class="form-input" placeholder="e.g. Maharashtra" required>
           </div>
 
-          <div class="form-group form-group--full">
+          <div class="form-group">
             <label for="shipping-pincode" class="form-label">PIN Code *</label>
-            <input type="text" id="shipping-pincode" class="form-input" placeholder="6-digit Indian PIN code" pattern="[0-9]{6}" required>
+            <input type="text" id="shipping-pincode" class="form-input" placeholder="6-digit PIN code" pattern="[0-9]{6}" required>
           </div>
 
           <div class="form-group form-group--full" style="margin-top: 16px;">
