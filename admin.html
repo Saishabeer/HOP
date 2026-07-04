@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | House of Prime Collections</title>
+  
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body { background-color: var(--velvet-cream); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    
+    .admin-container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 24px rgba(139,26,74,0.12); width: 100%; max-width: 600px; display: none; }
+    .login-container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 24px rgba(139,26,74,0.12); width: 100%; max-width: 400px; text-align: center; display: none; }
+    
+    .admin-container.active, .login-container.active { display: block; }
+    
+    .form-group { margin-bottom: 1.5rem; width: 100%; }
+    .form-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .form-row > .form-group { flex: 1; min-width: 200px; }
+    
+    .form-label { display: block; margin-bottom: 0.5rem; font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--deep-charcoal); }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-family: 'Lato', sans-serif; font-size: 16px; }
+    .form-textarea { resize: vertical; min-height: 100px; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary-rose); }
+    .form-input:disabled, .form-select:disabled, .form-textarea:disabled { background-color: #f5f5f5; cursor: not-allowed; opacity: 0.7; }
+    
+    .header-logo { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--primary-rose); margin-bottom: 0.5rem; font-weight: 700; text-align: center; }
+    .header-sub { font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 2px; color: var(--deep-charcoal); text-align: center; margin-bottom: 2rem; }
+    
+    .image-preview-container { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .image-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
+    
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--deep-charcoal); color: white; padding: 12px 24px; border-radius: 4px; opacity: 0; transition: all 0.3s ease; z-index: 1000; text-align: center; max-width: 90%; word-break: break-word; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.error { background: #d32f2f; }
+    .toast.success { background: #388e3c; }
+    
+    /* Loading overlay */
+    .loader { display: none; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary-rose); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast">Message goes here</div>
+
+  <!-- LOGIN SECTION -->
+  <div id="login-section" class="login-container active">
+    <div class="header-logo">HOUSE OF PRIME</div>
+    <div class="header-sub">ADMINISTRATION</div>
+    <div class="form-group">
+      <label class="form-label" for="admin-password">Admin Password</label>
+      <input type="password" id="admin-password" class="form-input" placeholder="Enter secure password">
+    </div>
+    <button id="login-btn" class="btn btn-primary" style="width: 100%;">
+      <span id="login-text">Login to Dashboard</span>
+      <div id="login-loader" class="loader"></div>
+    </button>
+  </div>
+
+  <!-- ADMIN PANEL SECTION -->
+  <div id="admin-section" class="admin-container">
+    <div class="header-logo">HOUSE OF PRIME</div>
+    <div class="header-sub">ADD NEW PRODUCT</div>
+    
+    <form id="product-form">
+      <div class="form-row">
+        <div class="form-group" style="flex: 2;">
+          <label class="form-label" for="product-name">Product Name *</label>
+          <input type="text" id="product-name" class="form-input" required>
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label" for="product-model">Model Number *</label>
+          <input type="text" id="product-model" class="form-input" placeholder="e.g. KR-001" required>
+          <div id="model-status" style="font-size: 12px; margin-top: 4px; font-weight: 500;"></div>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="product-price">Price (Rs.) *</label>
+          <input type="number" id="product-price" class="form-input" required min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="product-discount">Discount Price (Rs.)</label>
+          <input type="number" id="product-discount" class="form-input" min="1">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group" style="flex: 2;">
+          <label class="form-label" for="product-category">Category *</label>
+          <select id="product-category" class="form-select" required>
+            <option value="Korean Earrings">Korean Earrings</option>
+            <option value="Stud Earrings">Stud Earrings</option>
+            <option value="Fancy Earrings">Fancy Earrings</option>
+            <option value="add_new" style="font-weight: bold; color: var(--primary-rose);">+ Add New Category</option>
+          </select>
+          <input type="text" id="new-category-input" class="form-input" placeholder="Enter new category name" style="display: none; margin-top: 8px;">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label" for="product-stock">Stock *</label>
+          <input type="number" id="product-stock" class="form-input" required min="0" value="50">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label class="form-label" for="product-display-order">Display Order</label>
+          <input type="number" id="product-display-order" class="form-input" min="1" value="99">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="product-material">Material</label>
+          <input type="text" id="product-material" class="form-input" placeholder="e.g. Alloy, Pearls">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="product-color">Color</label>
+          <input type="text" id="product-color" class="form-input" placeholder="e.g. Gold, White">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="product-weight">Weight</label>
+          <input type="text" id="product-weight" class="form-input" placeholder="e.g. 5g">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="product-desc">Description</label>
+        <textarea id="product-desc" class="form-textarea" placeholder="Max 500 characters..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="product-images">Product Images * (Up to 4 images)</label>
+        <input type="file" id="product-images" class="form-input" accept="image/jpeg, image/png, image/webp" multiple required>
+        <div class="image-preview-container" id="image-preview-container">
+          <!-- Image previews appended here -->
+        </div>
+      </div>
+      
+      <div class="form-row" style="margin-bottom: 1.5rem; gap: 1rem;">
+        <label style="display:flex; align-items:center; gap:8px; font-family:'DM Sans',sans-serif; cursor:pointer;">
+          <input type="checkbox" id="flag-new"> New Arrival
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-family:'DM Sans',sans-serif; cursor:pointer;">
+          <input type="checkbox" id="flag-featured"> Featured
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; font-family:'DM Sans',sans-serif; cursor:pointer;">
+          <input type="checkbox" id="flag-bestseller"> Best Seller
+        </label>
+      </div>
+
+      <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%;">
+        <span id="submit-text">Upload Product</span>
+        <div id="submit-loader" class="loader"></div>
+      </button>
+      
+      <div style="text-align: center; margin-top: 1rem;">
+        <a href="#" id="logout-btn" style="color: var(--warm-gray); text-decoration: underline; font-family: 'DM Sans', sans-serif; font-size: 14px;">Logout</a>
+      </div>
+    </form>
+  </div>
+
+    <!-- utils — load first -->
+  <script src="js/utils/sanitize.js" defer></script>
+  <script src="js/utils/debounce.js" defer></script>
+  <script src="js/utils/logger.js" defer></script>
+  <script src="js/utils/validator.js" defer></script>
+  <script src="js/utils/formatter.js" defer></script>
+    <!-- shared services & ui -->
+  <script src="js/services/ImageService.js" defer></script>
+  <script src="js/ui/Toast.js" defer></script>
+  <script src="js/ui/Skeleton.js" defer></script>
+  <script src="js/ui/ProductCard.js" defer></script>
+  <!-- core scripts -->
+  <script src="js/config.js" defer></script>
+  <script src="js/lib/data.js" defer></script>
+  <script src="js/lib/sheetsWriter.js" defer></script>
+  <script src="js/admin.js" defer></script>
+</body>
+</html>

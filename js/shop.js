@@ -60,13 +60,15 @@ function initUiBindings() {
     searchInput.value = state.q;
     if (state.q) searchClear.style.display = 'flex';
 
-    searchInput.addEventListener('input', (e) => {
+    const handleSearch = debounce((e) => {
       state.q = e.target.value;
-      state.page = 1; // Reset to page 1 on search
+      state.page = 1;
       searchClear.style.display = state.q ? 'flex' : 'none';
       updateUrl();
       applyFiltersAndRender();
-    });
+    }, 300);
+
+    searchInput.addEventListener('input', handleSearch);
   }
 
   if (searchClear && searchInput) {
@@ -114,16 +116,26 @@ function initUiBindings() {
   }
 
   // 3. Sort Dropdowns (Mobile & Desktop)
-  const sortSelect = document.getElementById('sort-select');
-  if (sortSelect) {
-    sortSelect.value = state.sort;
-    sortSelect.addEventListener('change', (e) => {
+  const sortSelects = [
+    document.getElementById('sort-select'),
+    document.getElementById('sort-select-desktop')
+  ].filter(Boolean);
+
+  sortSelects.forEach(select => {
+    select.value = state.sort;
+    select.addEventListener('change', (e) => {
       state.sort = e.target.value;
       state.page = 1;
+      
+      // Keep other sort selects in sync
+      sortSelects.forEach(s => {
+        s.value = state.sort;
+      });
+      
       updateUrl();
       applyFiltersAndRender();
     });
-  }
+  });
 
   // Setup WA Float Link
   const waBtn = document.querySelector('.whatsapp-float');
@@ -138,7 +150,7 @@ function initUiBindings() {
  */
 async function loadShopProducts() {
   const container = document.getElementById('catalog-grid');
-  showSkeletons(container, 6);
+  Skeleton.showIn(container, 6);
 
   try {
     allProducts = await fetchProducts();
@@ -162,7 +174,7 @@ function setupFilterControls() {
   const categoryContainer = document.getElementById('category-pills');
   const categoryContainerMobile = document.getElementById('category-pills-mobile');
   
-  const uniqueCategories = ['Korean Earrings', 'Stud Earrings', 'Fancy Earrings'];
+  const uniqueCategories = [...new Set(allProducts.map(p => p.Category))].filter(Boolean);
 
   const renderCategoryControls = (el, isMobile) => {
     if (!el) return;
@@ -182,7 +194,7 @@ function setupFilterControls() {
       const count = allProducts.filter(p => p.Category === cat).length;
       const pill = document.createElement('div');
       pill.className = `filter-pill ${state.category === cat ? 'active' : ''}`;
-      pill.innerHTML = `<span>${cat}</span><span style="font-size: 0.75rem; opacity: 0.6;">(${count})</span>`;
+      pill.innerHTML = `<span>${sanitize(cat)}</span><span style="font-size: 0.75rem; opacity: 0.6;">(${count})</span>`;
       pill.addEventListener('click', () => {
         selectCategory(cat, isMobile);
       });
@@ -316,10 +328,22 @@ function applyFiltersAndRender() {
 
     if (state.sort === 'price-low') return pA - pB;
     if (state.sort === 'price-high') return pB - pA;
-    if (state.sort === 'newest') return new Date(b.CreatedDate) - new Date(a.CreatedDate);
-    if (state.sort === 'best') return (b.BestSeller ? 1 : 0) - (a.BestSeller ? 1 : 0);
+    if (state.sort === 'newest') {
+      const dateA = new Date(a.CreatedDate || 0);
+      const dateB = new Date(b.CreatedDate || 0);
+      if (dateB - dateA !== 0) return dateB - dateA;
+      return b.ProductID.localeCompare(a.ProductID);
+    }
+    if (state.sort === 'best') {
+      const bestSellerDiff = (b.BestSeller ? 1 : 0) - (a.BestSeller ? 1 : 0);
+      if (bestSellerDiff !== 0) return bestSellerDiff;
+      const scoreA = (a.OrderCount || 0) + getLocalInterest(a.ProductID);
+      const scoreB = (b.OrderCount || 0) + getLocalInterest(b.ProductID);
+      if (scoreB !== scoreA) return scoreB - scoreA;
+      return b.DisplayOrder - a.DisplayOrder;
+    }
     
-    // Featured / default is DisplayOrder
+    // Featured / default is DisplayOrder (ascending, lowest first)
     return a.DisplayOrder - b.DisplayOrder;
   });
 
@@ -368,68 +392,8 @@ function renderCatalog(productList) {
 
   container.innerHTML = '';
   paginatedProducts.forEach(product => {
-    const isOutOfStock = product.StockQuantity <= 0;
-    const hasDiscount = product.DiscountPrice !== null && product.DiscountPrice > 0;
-    
-    let badgesHtml = '';
-    if (isOutOfStock) {
-      badgesHtml += `<span class="badge badge-soldout">Out of Stock</span>`;
-    } else {
-      if (product.NewArrival) badgesHtml += `<span class="badge badge-new">New</span>`;
-      if (hasDiscount) badgesHtml += `<span class="badge badge-sale">Sale</span>`;
-    }
-
-    const pricingHtml = hasDiscount 
-      ? `<span class="price-display__current">${CONFIG.CURRENCY}${product.DiscountPrice}</span>
-         <span class="price-display__old">${CONFIG.CURRENCY}${product.Price}</span>`
-      : `<span class="price-display__current">${CONFIG.CURRENCY}${product.Price}</span>`;
-
-    const actionBtnHtml = isOutOfStock
-      ? `<button class="btn btn-primary btn-disabled" disabled>Sold Out</button>`
-      : `<button class="btn btn-primary add-to-cart-btn" data-id="${product.ProductID}" data-stock="${product.StockQuantity}" aria-label="Add to cart">
-          <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-          </svg>
-          Add
-         </button>`;
-
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.style.cursor = 'pointer';
-    card.setAttribute('role', 'link');
-    card.setAttribute('aria-label', `View ${product.ProductName}`);
-    card.innerHTML = `
-      <div class="product-card__img-container">
-        <div class="product-card__badges">${badgesHtml}</div>
-        <img class="product-card__img" src="${product.ProductImageURL}" alt="${product.ProductName}" loading="lazy">
-      </div>
-      <div class="product-card__content">
-        <div class="product-card__category">${product.Category}</div>
-        <h3 class="product-card__title">${product.ProductName}</h3>
-        <div class="product-card__model">Model: ${product.ModelNumber}</div>
-        <div class="product-card__footer">
-          <div class="price-display">${pricingHtml}</div>
-          ${actionBtnHtml}
-        </div>
-      </div>
-    `;
-
-    // Clicking anywhere on the card navigates to product page
-    card.addEventListener('click', () => {
-      window.location.href = `product.html?id=${product.ProductID}`;
-    });
-
+    const card = ProductCard.create(product, { isLink: true, showAddToCart: true });
     container.appendChild(card);
-  });
-
-  // Re-bind Add to Cart — stop propagation so card click doesn't also fire
-  container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation(); // prevent card navigation
-      const id = btn.getAttribute('data-id');
-      const stock = parseInt(btn.getAttribute('data-stock'), 10);
-      Cart.add(id, 1, stock);
-    });
   });
 
   renderPagination(totalPages);
@@ -471,20 +435,4 @@ window.changePage = function(pageNumber) {
   document.getElementById('catalog-header').scrollIntoView({ behavior: 'smooth' });
 };
 
-/**
- * Loading shimmers
- */
-function showSkeletons(container, count) {
-  if (!container) return;
-  let skeletonsHtml = '';
-  for (let i = 0; i < count; i++) {
-    skeletonsHtml += `
-      <div class="shimmer-card">
-        <div class="shimmer-box shimmer-card__img"></div>
-        <div class="shimmer-box shimmer-card__title"></div>
-        <div class="shimmer-box shimmer-card__price"></div>
-      </div>
-    `;
-  }
-  container.innerHTML = skeletonsHtml;
-}
+

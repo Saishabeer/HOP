@@ -9,6 +9,7 @@
   font-weight: 500;
   font-size: 0.9rem;
   padding: 10px 20px;
+  min-height: 44px;
   border-radius: var(--radius-button);
   transition: all var(--transition-fast);
   text-align: center;
@@ -20,6 +21,7 @@
   transform: scale(0.98);
 }
 
+/* Button variants */
 .btn-primary {
   background-color: var(--primary-rose);
   color: var(--ivory-white);
@@ -27,7 +29,15 @@
 
 .btn-primary:hover {
   background-color: var(--deep-rose);
+  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(139, 26, 74, 0.2);
+}
+
+/* Specific to Product Card Add Button */
+.add-to-cart-btn {
+  flex-shrink: 0;
+  min-width: 90px;
+  padding: 0.5rem 0.8rem;
 }
 
 .btn-outline {
@@ -84,6 +94,7 @@
 .product-card__img-container {
   aspect-ratio: 1;
   width: 100%;
+  flex-shrink: 0;
   overflow: hidden;
   background-color: var(--velvet-cream);
   position: relative;
@@ -130,13 +141,13 @@
   font-size: 1.05rem;
   font-weight: 500;
   margin-bottom: 6px;
-  line-height: 1.3;
+  line-height: 1.35;
+  min-height: calc(1.35em * 2);
   color: var(--deep-charcoal);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 2.6rem;
 }
 
 .product-card__model {
@@ -152,6 +163,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  width: 100%;
 }
 
 /* --- PRICE DISPLAY --- */
@@ -159,6 +171,9 @@
   display: flex;
   align-items: baseline;
   gap: 6px;
+  flex: 1;
+  flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .price-display__current {
@@ -396,3 +411,293 @@
   color: var(--warm-gray);
   max-width: 300px;
 }
+
+/* --- INLINE ADMIN CONTROLS & MODALS --- */
+.product-card {
+  position: relative; /* Ensure child absolute elements anchor properly */
+}
+
+.product-card__edit-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 15;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: var(--ivory-white);
+  border: 1px solid var(--velvet-cream);
+  color: var(--primary-rose);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.product-card__edit-btn:hover {
+  background-color: var(--primary-rose);
+  color: var(--ivory-white);
+  border-color: var(--primary-rose);
+  transform: scale(1.1);
+}
+
+.product-card__edit-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Modal Overlay */
+.admin-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(45, 45, 45, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal Window */
+.admin-modal__content {
+  background-color: var(--ivory-white);
+  padding: 28px;
+  border-radius: var(--radius-card);
+  max-width: 550px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  border: 1px solid var(--velvet-cream);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-modal__title {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  color: var(--primary-rose);
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--velvet-cream);
+}
+
+.admin-modal__close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--warm-gray);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.admin-modal__close:hover {
+  color: var(--deep-charcoal);
+}
+
+/* Form Styles inside Modal */
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-form-group label {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--deep-charcoal);
+  text-transform: uppercase;
+}
+
+.admin-form-input,
+.admin-form-select,
+.admin-form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--velvet-cream);
+  border-radius: var(--radius-button);
+  font-family: var(--font-body);
+  font-size: 16px; /* prevent iOS auto-zoom */
+  color: var(--deep-charcoal);
+  background-color: #ffffff;
+}
+
+.admin-form-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.admin-form-input:focus,
+.admin-form-select:focus,
+.admin-form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-rose);
+  box-shadow: 0 0 0 3px rgba(139, 26, 74, 0.1);
+}
+
+.admin-form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-form-row > .admin-form-group {
+  flex: 1;
+  min-width: 120px;
+}
+
+.admin-modal__img-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-modal__img-preview {
+  width: 70px;
+  height: 70px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--velvet-cream);
+  background-color: var(--velvet-cream);
+}
+
+/* Buttons */
+.admin-modal__buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.btn-admin-save {
+  flex: 2;
+  background-color: var(--primary-rose);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.btn-admin-save:hover {
+  background-color: var(--deep-rose);
+}
+
+.btn-admin-delete {
+  flex: 1;
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+  font-weight: 700;
+}
+
+.btn-admin-delete:hover {
+  background-color: #c62828;
+  color: #ffffff;
+  border-color: #c62828;
+}
+
+.btn-admin-save:disabled,
+.btn-admin-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--deep-charcoal);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 3000;
+  text-align: center;
+  max-width: 90%;
+  word-break: break-word;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.toast.error {
+  background: #d32f2f;
+}
+
+.toast.success {
+  background: #388e3c;
+}
+
+/* Floating Action Button for Admins */
+.admin-fab {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 2500;
+  background-color: var(--primary-rose);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.admin-fab svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  margin-right: 8px;
+  transition: transform 0.3s ease;
+}
+
+.admin-fab:hover {
+  background-color: #70133a;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.admin-fab:hover svg {
+  transform: rotate(90deg);
+}
+
+@media (max-width: 768px) {
+  .admin-fab {
+    height: 48px;
+    padding: 0 14px;
+    font-size: 0.85rem;
+    bottom: 15px;
+    left: 15px;
+  }
+  .admin-fab svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 4px;
+  }
+}
+
+
+

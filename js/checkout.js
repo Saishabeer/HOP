@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Check if cart is empty, redirect if so
   const cart = Cart.get();
   if (cart.length === 0) {
-    Cart.showToast("Your cart is empty. Add products before checkout.", "error");
+    if (typeof Toast !== 'undefined') Toast.show("Your cart is empty. Add products before checkout.", "error");
     setTimeout(() => { window.location.href = 'shop.html'; }, 1500);
     return;
   }
@@ -62,12 +62,11 @@ async function loadCheckoutData(cart) {
         const lineTotal = price * cartItem.qty;
         calculatedSubtotal += lineTotal;
 
-        // Render line item
         const itemRow = document.createElement('div');
         itemRow.className = 'checkout-item';
         itemRow.innerHTML = `
           <span class="checkout-item__name">
-            ${product.ProductName}
+            ${sanitize(product.ProductName)}
             <span class="checkout-item__qty">x${cartItem.qty}</span>
           </span>
           <span class="checkout-item__total">${CONFIG.CURRENCY}${lineTotal}</span>
@@ -146,49 +145,43 @@ function setupCheckoutForm() {
 
     // 2. Perform validations
     if (!name) {
-      Cart.showToast("Please enter your Full Name", "error");
+      if (typeof Toast !== 'undefined') Toast.show("Please enter your Full Name", "error");
       document.getElementById('shipping-name').focus();
       return;
     }
 
-    // Indian phone number regex: 10 digits starting with 6-9
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!phoneRegex.test(phone)) {
-      Cart.showToast("Please enter a valid 10-digit Indian phone number", "error");
+    if (!Validator.isIndianPhone(phone)) {
+      if (typeof Toast !== 'undefined') Toast.show("Please enter a valid 10-digit Indian phone number", "error");
       document.getElementById('shipping-phone').focus();
       return;
     }
 
-    // Email regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email && !emailRegex.test(email)) {
-      Cart.showToast("Please enter a valid email address", "error");
+    if (email && !Validator.isEmail(email)) {
+      if (typeof Toast !== 'undefined') Toast.show("Please enter a valid email address", "error");
       document.getElementById('shipping-email').focus();
       return;
     }
 
-    if (!address || address.length < 8) {
-      Cart.showToast("Please enter a detailed delivery address", "error");
+    if (!Validator.isValidAddress(address)) {
+      if (typeof Toast !== 'undefined') Toast.show("Please enter a detailed delivery address", "error");
       document.getElementById('shipping-address').focus();
       return;
     }
 
     if (!city) {
-      Cart.showToast("Please enter your City", "error");
+      if (typeof Toast !== 'undefined') Toast.show("Please enter your City", "error");
       document.getElementById('shipping-city').focus();
       return;
     }
 
     if (!stateVal) {
-      Cart.showToast("Please enter your State", "error");
+      if (typeof Toast !== 'undefined') Toast.show("Please enter your State", "error");
       document.getElementById('shipping-state').focus();
       return;
     }
 
-    // Pincode validation: 6 digits
-    const pincodeRegex = /^\d{6}$/;
-    if (!pincodeRegex.test(pincode)) {
-      Cart.showToast("Please enter a valid 6-digit Indian PIN code", "error");
+    if (!Validator.isIndianPincode(pincode)) {
+      if (typeof Toast !== 'undefined') Toast.show("Please enter a valid 6-digit Indian PIN code", "error");
       document.getElementById('shipping-pincode').focus();
       return;
     }
@@ -221,6 +214,10 @@ function setupCheckoutForm() {
     // 5. Generate WhatsApp Order Message & Open Link
     const waUrl = WhatsApp.getCheckoutUrl(orderMetadata);
     
+    // Increment orders globally in Google Sheets (Option 2)
+    const productIdsToIncrement = checkoutCart.map(item => item.product.ProductID);
+    sendOrderIncrementToSheets(productIdsToIncrement);
+
     // Clear shopping cart
     Cart.clear();
 
@@ -302,9 +299,9 @@ function showOrderSuccessPage(order, waUrl) {
       <div style="background-color: var(--velvet-cream); border-radius: var(--radius-card); padding: 20px; text-align: left;">
         <h4 style="font-family: var(--font-ui); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; border-bottom: 1px solid rgba(139, 26, 74, 0.1); padding-bottom: 8px; margin-bottom: 12px; color: var(--primary-rose);">Delivery Details</h4>
         <p style="font-size: 0.9rem; line-height: 1.4; margin-bottom: 0;">
-          <strong>Name:</strong> ${order.customer.name}<br>
-          <strong>Phone:</strong> +91 ${order.customer.phone}<br>
-          <strong>Address:</strong> ${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}
+          <strong>Name:</strong> ${sanitize(order.customer.name)}<br>
+          <strong>Phone:</strong> +91 ${sanitize(order.customer.phone)}<br>
+          <strong>Address:</strong> ${sanitize(order.customer.address)}, ${sanitize(order.customer.city)}, ${sanitize(order.customer.state)} - ${sanitize(order.customer.pincode)}
         </p>
       </div>
 

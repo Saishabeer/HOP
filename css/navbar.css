@@ -38,6 +38,7 @@
   letter-spacing: 2px;
   color: var(--primary-rose);
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .logo__sub {
@@ -50,6 +51,7 @@
   margin-top: 3px;
   position: relative;
   padding-top: 4px;
+  white-space: nowrap;
 }
 
 .logo__sub::before {
@@ -114,8 +116,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-round);
   transition: background-color var(--transition-fast), color var(--transition-fast);
 }
@@ -138,8 +140,8 @@
 
 .cart-badge {
   position: absolute;
-  top: -2px;
-  right: -2px;
+  top: 2px;
+  right: 2px;
   background-color: var(--primary-rose);
   color: var(--ivory-white);
   font-family: var(--font-ui);
@@ -160,8 +162,9 @@
   display: none;
   flex-direction: column;
   justify-content: space-between;
-  width: 24px;
-  height: 18px;
+  width: 44px;
+  height: 44px;
+  padding: 13px 10px;
   cursor: pointer;
   z-index: 950;
 }
@@ -174,7 +177,7 @@
 }
 
 /* Mobile responsive menu */
-@media (max-width: 768px) {
+@media (max-width: 850px) {
   .hamburger {
     display: flex;
   }
@@ -209,5 +212,21 @@
 
   .hamburger.is-active .hamburger__line:nth-child(3) {
     transform: translateY(-8px) rotate(-45deg);
+  }
+}
+
+/* Graceful styling for very small mobile screens to prevent overflow */
+@media (max-width: 480px) {
+  .logo__main {
+    font-size: 1.15rem;
+    letter-spacing: 1px;
+  }
+  .logo__sub {
+    font-size: 0.5rem;
+    letter-spacing: 3px;
+    margin-top: 2px;
+  }
+  .nav-actions {
+    gap: 10px;
   }
 }

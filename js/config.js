@@ -19,5 +19,17 @@ const CONFIG = {
   CURRENCY: 'Rs.',
 
   // API settings
-  CACHE_EXPIRY_MS: 5 * 60 * 1000 // 5 minutes cache
+  CACHE_EXPIRY_MS: 5 * 60 * 1000, // 5 minutes cache
+
+  // --- ADMIN PANEL API SETTINGS ---
+  
+  // Cloudinary settings for direct image uploads
+  CLOUDINARY_CLOUD_NAME: 'dgivkatwl',
+  CLOUDINARY_UPLOAD_PRESET: 'hop_products',
+  
+  // URL of the Google Apps Script Web App (Database Write)
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwvLLqIDYgWnTiZDK2eXslZzm4tOx2IxE2F7CfgJyCXSSN5F4ZpweVWxBVZJJekmYlt/exec',
+  
+  // Local/Netlify Function for Authentication (relative path)
+  AUTH_FUNCTION_URL: '/.netlify/functions/auth'
 };

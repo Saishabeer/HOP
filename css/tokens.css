@@ -1,0 +1,49 @@
+/* tokens.css - Brand Design Tokens */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap');
+
+:root {
+  /* Brand Colors */
+  --primary-rose: #8B1A4A;
+  --blush-pink: #C4547A;
+  --champagne-gold: #D4A853;
+  --ivory-white: #FDF8F4;
+  --velvet-cream: #F5EDE5;
+  --deep-charcoal: #2D2D2D;
+  --warm-gray: #888888;
+  --deep-rose: #5C0F2E;
+  
+  /* System States */
+  --success: #2e7d32;
+  --error: #d32f2f;
+  --warning: #f57c00;
+  --info: #0288d1;
+  --wa-green: #25D366;
+  --wa-green-hover: #128C7E;
+
+  /* Typography */
+  --font-display: 'Cormorant Garamond', serif;
+  --font-heading: 'Playfair Display', serif;
+  --font-ui: 'DM Sans', sans-serif;
+  --font-body: 'Lato', sans-serif;
+
+  /* Borders & Radius */
+  --radius-card: 8px;
+  --radius-button: 4px;
+  --radius-modal: 12px;
+  --radius-round: 50%;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(45, 45, 45, 0.06);
+  --shadow-md: 0 4px 12px rgba(45, 45, 45, 0.1);
+  --shadow-lg: 0 8px 24px rgba(139, 26, 74, 0.12);
+  --shadow-hover: 0 12px 30px rgba(139, 26, 74, 0.16);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease-in-out;
+  
+  /* Layout */
+  --max-width: 1200px;
+  --header-height: 70px;
+}

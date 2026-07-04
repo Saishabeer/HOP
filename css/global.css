@@ -1,6 +1,10 @@
 /* global.css - Core App Styling & Layout */
-@import url('variables.css');
+@import url('tokens.css');
 @import url('reset.css');
+
+html, body {
+  overflow-x: hidden;
+}
 
 body {
   font-family: var(--font-body);
@@ -9,7 +13,6 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
 main {
@@ -20,7 +23,8 @@ main {
 .container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 16px;
+  padding-left: 16px;
+  padding-right: 16px;
   width: 100%;
 }
 
@@ -76,6 +80,19 @@ p {
   width: 32px;
   height: 32px;
   fill: currentColor;
+}
+
+@media (max-width: 480px) {
+  .whatsapp-float {
+    bottom: 16px;
+    right: 16px;
+    width: 50px;
+    height: 50px;
+  }
+  .whatsapp-float svg {
+    width: 26px;
+    height: 26px;
+  }
 }
 
 @keyframes wa-pulse {
@@ -190,5 +207,12 @@ p {
 .fade-in-section.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Responsive adjustments for fixed header overlap on mobile devices */
+@media (max-width: 850px) {
+  main {
+    padding-top: calc(var(--header-height) + 12px);
+  }
 }
 

@@ -7,7 +7,7 @@
   <meta name="description" content="Explore details, price, materials, and colors of our premium Korean fashion accessories. Order on WhatsApp with ease.">
   
   <!-- CSS Style Files -->
-  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
@@ -72,8 +72,11 @@
       
       <!-- GALLERY COL -->
       <div class="gallery">
-        <div class="gallery__main-container" id="main-gallery-container">
-          <img class="gallery__main-img" id="main-gallery-img" src="" alt="Product view" fetchpriority="high">
+        <div class="gallery__carousel-wrapper">
+          <div class="gallery__main-container" id="main-gallery-container">
+            <img class="gallery__main-img" id="main-gallery-img" src="" alt="Product view" fetchpriority="high">
+          </div>
+          <div class="gallery__counter" id="gallery-counter" style="display: none;">1 / 1</div>
         </div>
         <div class="gallery__thumbnails" id="thumbnails-container">
           <!-- Thumbnail strip loaded by JS -->
@@ -103,59 +106,176 @@
           Fetching product description details from catalog...
         </p>
 
-        <!-- Product Specs list -->
-        <div class="specs-table">
-          <div class="specs-row">
-            <span class="specs-label">Material:</span>
-            <span class="specs-val" id="spec-material">---</span>
+        <!-- Product Specs Cards -->
+        <div class="specs-grid">
+          <div class="spec-card">
+            <span class="spec-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            </span>
+            <div class="spec-details">
+              <span class="spec-label">Material</span>
+              <span class="spec-val" id="spec-material">---</span>
+            </div>
           </div>
-          <div class="specs-row">
-            <span class="specs-label">Color:</span>
-            <span class="specs-val" id="spec-color">---</span>
+          <div class="spec-card">
+            <span class="spec-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+            </span>
+            <div class="spec-details">
+              <span class="spec-label">Color</span>
+              <span class="spec-val" id="spec-color">---</span>
+            </div>
           </div>
-          <div class="specs-row">
-            <span class="specs-label">Weight:</span>
-            <span class="specs-val" id="spec-weight">---</span>
+          <div class="spec-card">
+            <span class="spec-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+            </span>
+            <div class="spec-details">
+              <span class="spec-label">Weight</span>
+              <span class="spec-val" id="spec-weight">---</span>
+            </div>
           </div>
         </div>
 
-        <!-- Quantity Selector & Actions -->
-        <div class="product-actions">
-          
-          <div class="action-row">
-            <span class="specs-label" style="font-family: var(--font-ui); font-size: 0.9rem; font-weight: 700; width: auto; margin-right: 8px;">Quantity:</span>
-            
-            <div class="stepper">
-              <button class="stepper__btn" id="qty-minus" aria-label="Decrease quantity">&minus;</button>
-              <input type="number" class="stepper__input" id="qty-input" value="1" min="1" aria-label="Order quantity">
-              <button class="stepper__btn" id="qty-plus" aria-label="Increase quantity">+</button>
+        <!-- Quantity Selector -->
+        <div class="action-row" style="margin-bottom: 8px;">
+          <span class="specs-label" style="font-family: var(--font-ui); font-size: 0.9rem; font-weight: 700; width: auto; margin-right: 8px;">Quantity:</span>
+          <div class="stepper">
+            <button class="stepper__btn" id="qty-minus" aria-label="Decrease quantity">&minus;</button>
+            <input type="number" class="stepper__input" id="qty-input" value="1" min="1" aria-label="Order quantity">
+            <button class="stepper__btn" id="qty-plus" aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+
+        <!-- Sticky Mobile CTA Wrapper -->
+        <div class="mobile-sticky-cta">
+          <!-- Action Buttons -->
+          <div class="product-actions">
+            <div class="action-row">
+              <button class="btn btn-primary" id="btn-add-to-cart" style="flex: 1.2;">Add to Cart</button>
+              <button class="btn btn-outline" id="btn-buy-now" style="flex: 1;">Buy Now</button>
             </div>
+
+            <button class="btn btn-wa-order btn-block" id="btn-wa-quick">
+              <svg style="width: 20px; height: 20px; fill: currentColor; margin-right: 4px;" viewBox="0 0 24 24">
+                <path d="M12.012 2.163c-5.419 0-9.829 4.41-9.829 9.829 0 1.732.451 3.42 1.309 4.912L2.163 22.16l5.309-1.393c1.444.787 3.073 1.203 4.54 1.203h.001c5.421 0 9.83-4.411 9.83-9.83 0-2.628-1.023-5.097-2.88-6.956-1.857-1.858-4.325-2.88-6.951-2.88zm4.992 13.916c-.274.773-1.353 1.411-1.854 1.503-.496.091-.989.176-3.177-.729-2.796-1.156-4.597-4.004-4.737-4.188-.139-.186-1.134-1.509-1.134-2.879 0-1.37.718-2.043.973-2.317.254-.274.556-.342.742-.342h.53c.159 0 .373-.06.583.456.219.539.752 1.839.818 1.975.066.136.109.294.018.474-.09.18-.136.294-.273.456-.136.162-.284.359-.406.49-.136.147-.278.307-.119.581.159.273.707 1.166 1.517 1.888 1.044.93 1.92 1.218 2.193 1.354.273.136.43.113.59-.071.16-.184.685-.798.868-1.071.182-.273.364-.227.614-.136.251.091 1.597.752 1.87 1.026.273.273.455.41.523.525.068.115.068.66-.206 1.433z"/>
+              </svg>
+              Quick Order on WhatsApp
+            </button>
           </div>
+        </div>
 
-          <div class="action-row" style="margin-top: 8px;">
-            <button class="btn btn-primary" id="btn-add-to-cart" style="flex: 1.2;">Add to Cart</button>
-            <button class="btn btn-outline" id="btn-buy-now" style="flex: 1;">Buy Now</button>
+        <!-- Trust Badges -->
+        <div class="trust-badges">
+          <div class="trust-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l5 5 10-10"></path></svg>
+            <span>Premium Quality</span>
           </div>
-
-          <button class="btn btn-wa-order btn-block" id="btn-wa-quick">
-            <svg style="width: 20px; height: 20px; fill: currentColor; margin-right: 4px;" viewBox="0 0 24 24">
-              <path d="M12.012 2.163c-5.419 0-9.829 4.41-9.829 9.829 0 1.732.451 3.42 1.309 4.912L2.163 22.16l5.309-1.393c1.444.787 3.073 1.203 4.54 1.203h.001c5.421 0 9.83-4.411 9.83-9.83 0-2.628-1.023-5.097-2.88-6.956-1.857-1.858-4.325-2.88-6.951-2.88zm4.992 13.916c-.274.773-1.353 1.411-1.854 1.503-.496.091-.989.176-3.177-.729-2.796-1.156-4.597-4.004-4.737-4.188-.139-.186-1.134-1.509-1.134-2.879 0-1.37.718-2.043.973-2.317.254-.274.556-.342.742-.342h.53c.159 0 .373-.06.583.456.219.539.752 1.839.818 1.975.066.136.109.294.018.474-.09.18-.136.294-.273.456-.136.162-.284.359-.406.49-.136.147-.278.307-.119.581.159.273.707 1.166 1.517 1.888 1.044.93 1.92 1.218 2.193 1.354.273.136.43.113.59-.071.16-.184.685-.798.868-1.071.182-.273.364-.227.614-.136.251.091 1.597.752 1.87 1.026.273.273.455.41.523.525.068.115.068.66-.206 1.433z"/>
-            </svg>
-            Quick Order on WhatsApp
-          </button>
-
+          <div class="trust-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span>Secure Checkout</span>
+          </div>
+          <div class="trust-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"/></svg>
+            <span>Easy Returns</span>
+          </div>
+          <div class="trust-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            <span>Fast Shipping</span>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- RELATED PRODUCTS SECTION -->
-    <section class="related-section">
-      <h2 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 24px; color: var(--primary-rose);">You May Also Like</h2>
-      <div class="product-row" id="related-row">
-        <!-- Loaded Dynamically -->
-      </div>
-    </section>
+    <!-- RECOMMENDATIONS CONTAINER -->
+    <div id="recommendations-container">
+      
+      <!-- YOU MAY ALSO LIKE -->
+      <section class="related-section" id="section-related" style="display: none;">
+        <div class="related-section__header">
+          <div class="related-section__title-wrap">
+            <h2 class="related-section__title">You May Also Like</h2>
+            <p class="related-section__subtitle">Handpicked based on this product</p>
+          </div>
+          <a href="shop.html" class="view-all-link">View All &rarr;</a>
+        </div>
+        <div class="related-carousel-wrapper">
+          <button class="related-nav-btn related-nav-prev" id="related-prev" aria-label="Previous products">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="related-carousel" id="related-row"></div>
+          <button class="related-nav-btn related-nav-next" id="related-next" aria-label="Next products">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+        <div class="rec-dots" id="related-dots"></div>
+      </section>
+
+      <!-- NEWLY ARRIVED -->
+      <section class="related-section" id="section-new" style="display: none;">
+        <div class="related-section__header">
+          <div class="related-section__title-wrap">
+            <h2 class="related-section__title">Newly Arrived</h2>
+            <p class="related-section__subtitle">Fresh additions to our collection</p>
+          </div>
+          <a href="shop.html" class="view-all-link">View All &rarr;</a>
+        </div>
+        <div class="related-carousel-wrapper">
+          <button class="related-nav-btn related-nav-prev" id="new-prev" aria-label="Previous products">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="related-carousel" id="new-row"></div>
+          <button class="related-nav-btn related-nav-next" id="new-next" aria-label="Next products">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+        <div class="rec-dots" id="new-dots"></div>
+      </section>
+
+      <!-- MOST SELLING -->
+      <section class="related-section" id="section-best" style="display: none;">
+        <div class="related-section__header">
+          <div class="related-section__title-wrap">
+            <h2 class="related-section__title">Most Selling</h2>
+            <p class="related-section__subtitle">Our customer favorites</p>
+          </div>
+          <a href="shop.html" class="view-all-link">View All &rarr;</a>
+        </div>
+        <div class="related-carousel-wrapper">
+          <button class="related-nav-btn related-nav-prev" id="best-prev" aria-label="Previous products">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="related-carousel" id="best-row"></div>
+          <button class="related-nav-btn related-nav-next" id="best-next" aria-label="Next products">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+        <div class="rec-dots" id="best-dots"></div>
+      </section>
+
+      <!-- TRENDING NOW -->
+      <section class="related-section" id="section-trending" style="display: none;">
+        <div class="related-section__header">
+          <div class="related-section__title-wrap">
+            <h2 class="related-section__title">Trending Now</h2>
+            <p class="related-section__subtitle">Popular picks right now</p>
+          </div>
+          <a href="shop.html" class="view-all-link">View All &rarr;</a>
+        </div>
+        <div class="related-carousel-wrapper">
+          <button class="related-nav-btn related-nav-prev" id="trending-prev" aria-label="Previous products">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="related-carousel" id="trending-row"></div>
+          <button class="related-nav-btn related-nav-next" id="trending-next" aria-label="Next products">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+        <div class="rec-dots" id="trending-dots"></div>
+      </section>
+
+    </div>
 
   </main>
 
@@ -233,12 +353,27 @@
     </svg>
   </a>
 
+  <!-- utils — load first -->
+  <script src="js/utils/sanitize.js" defer></script>
+  <script src="js/utils/debounce.js" defer></script>
+  <script src="js/utils/logger.js" defer></script>
+  <script src="js/utils/validator.js" defer></script>
+  <script src="js/utils/formatter.js" defer></script>
   <!-- core scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/whatsapp.js"></script>
-  <script src="js/zoom.js"></script>
-  <script src="js/product.js"></script>
+    <!-- shared services & ui -->
+  <script src="js/services/ImageService.js" defer></script>
+  <script src="js/ui/Toast.js" defer></script>
+  <script src="js/ui/Skeleton.js" defer></script>
+  <script src="js/ui/ProductCard.js" defer></script>
+  <!-- core scripts -->
+  <script src="js/config.js" defer></script>
+  <script src="js/lib/data.js" defer></script>
+  <script src="js/lib/sheetsWriter.js" defer></script>
+  <script src="js/services/CartService.js" defer></script>
+  <script src="js/cart.js" defer></script>
+  <script src="js/whatsapp.js" defer></script>
+  <script src="js/zoom.js" defer></script>
+  <script src="js/product.js?v=2" defer></script>
+  <script src="js/admin-controls.js" defer></script>
 </body>
 </html>

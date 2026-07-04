@@ -7,7 +7,7 @@
   <meta name="description" content="Reach out to House of Prime Collections. Send inquiries, custom order details, or bulk requests directly via WhatsApp or email.">
   
   <!-- CSS Style Files -->
-  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
@@ -278,10 +278,18 @@
   </a>
 
   <!-- core scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/whatsapp.js"></script>
+    <!-- utils — load first -->
+  <script src="js/utils/sanitize.js" defer></script>
+  <script src="js/utils/debounce.js" defer></script>
+  <script src="js/utils/logger.js" defer></script>
+  <script src="js/utils/validator.js" defer></script>
+  <script src="js/utils/formatter.js" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/lib/data.js" defer></script>
+  <script src="js/lib/sheetsWriter.js" defer></script>
+  <script src="js/services/CartService.js" defer></script>
+  <script src="js/cart.js" defer></script>
+  <script src="js/whatsapp.js" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const form = document.getElementById('contact-form');

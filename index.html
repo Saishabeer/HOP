@@ -17,7 +17,7 @@
   <meta property="og:locale" content="en_IN">
 
   <!-- CSS Style Files -->
-  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
@@ -114,44 +114,94 @@
     </section>
 
     <!-- PRODUCT CATEGORIES -->
-    <section class="section container">
-      <div class="section__header">
-        <span class="section__subtitle">Curated Categories</span>
-        <h2 class="section__title">Shop by Category</h2>
+    <section class="section container categories-section">
+      <div class="categories-header-wrap">
+        <div class="categories-header-text">
+          <h2 class="categories-title">Shop by Category</h2>
+          <p class="categories-subtitle">Explore our wide range of premium jewelry collections</p>
+        </div>
+        <a href="shop.html" class="categories-view-all desktop-only">View All Categories &rarr;</a>
       </div>
-      <div class="categories-grid">
+      
+      <div class="categories-carousel-wrapper">
+        <button class="cat-nav-btn cat-prev" id="cat-prev" aria-label="Previous categories">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
         
-        <!-- Category 1 -->
-        <div class="category-card" onclick="window.location.href='shop.html?category=Korean%20Earrings'">
-          <img class="category-card__img" src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&auto=format&fit=crop&q=80" alt="Korean Earrings category image">
-          <div class="category-card__overlay"></div>
-          <div class="category-card__content">
-            <h3 class="category-card__title">Korean Earrings</h3>
-            <span class="category-card__cta">View Collection &rarr;</span>
-          </div>
-        </div>
+        <div class="categories-carousel" id="categories-grid">
+          <!-- Cards will be populated here -->
+          
+          <!-- Category 1 -->
+          <a href="shop.html?category=Korean%20Earrings" class="cat-card">
+            <img class="cat-card__img" src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&auto=format&fit=crop&q=80" alt="Korean Earrings">
+            <div class="cat-card__overlay"></div>
+            <div class="cat-card__content">
+              <div class="cat-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div class="cat-card__text">
+                <h3 class="cat-card__title">Korean Earrings</h3>
+                <span class="cat-card__count">120+ Designs</span>
+              </div>
+              <div class="cat-card__arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+            </div>
+          </a>
 
-        <!-- Category 2 -->
-        <div class="category-card" onclick="window.location.href='shop.html?category=Stud%20Earrings'">
-          <img class="category-card__img" src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop&q=80" alt="Stud Earrings category image">
-          <div class="category-card__overlay"></div>
-          <div class="category-card__content">
-            <h3 class="category-card__title">Stud Earrings</h3>
-            <span class="category-card__cta">View Collection &rarr;</span>
-          </div>
-        </div>
+          <!-- Category 2 -->
+          <a href="shop.html?category=Stud%20Earrings" class="cat-card">
+            <img class="cat-card__img" src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop&q=80" alt="Stud Earrings">
+            <div class="cat-card__overlay"></div>
+            <div class="cat-card__content">
+              <div class="cat-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+              </div>
+              <div class="cat-card__text">
+                <h3 class="cat-card__title">Stud Earrings</h3>
+                <span class="cat-card__count">85+ Designs</span>
+              </div>
+              <div class="cat-card__arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+            </div>
+          </a>
 
-        <!-- Category 3 -->
-        <div class="category-card" onclick="window.location.href='shop.html?category=Fancy%20Earrings'">
-          <img class="category-card__img" src="https://images.unsplash.com/photo-1635767798638-3e25273a8236?w=600&auto=format&fit=crop&q=80" alt="Fancy Earrings category image">
-          <div class="category-card__overlay"></div>
-          <div class="category-card__content">
-            <h3 class="category-card__title">Fancy Earrings</h3>
-            <span class="category-card__cta">View Collection &rarr;</span>
-          </div>
-        </div>
+          <!-- Category 3 -->
+          <a href="shop.html?category=Fancy%20Earrings" class="cat-card">
+            <img class="cat-card__img" src="https://images.unsplash.com/photo-1635767798638-3e25273a8236?w=600&auto=format&fit=crop&q=80" alt="Fancy Earrings">
+            <div class="cat-card__overlay"></div>
+            <div class="cat-card__content">
+              <div class="cat-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div class="cat-card__text">
+                <h3 class="cat-card__title">Fancy Earrings</h3>
+                <span class="cat-card__count">95+ Designs</span>
+              </div>
+              <div class="cat-card__arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+            </div>
+          </a>
 
+          <!-- More categories would be populated by JS -->
+          
+        </div>
+        
+        <button class="cat-nav-btn cat-next" id="cat-next" aria-label="Next categories">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </div>
+      
+      <!-- Dots indicator -->
+      <div class="cat-dots" id="cat-dots">
+        <span class="cat-dot active" data-index="0"></span>
+        <span class="cat-dot" data-index="1"></span>
+        <span class="cat-dot" data-index="2"></span>
+      </div>
+
+      <a href="shop.html" class="categories-view-all mobile-only btn-block" style="text-align: center; margin-top: 16px; border: 1px solid var(--primary-rose); padding: 12px; border-radius: 8px; color: var(--primary-rose); font-weight: 600;">View All Categories &rarr;</a>
     </section>
 
     <!-- NEW ARRIVALS -->
@@ -418,13 +468,29 @@
     </svg>
   </a>
 
+  <!-- utils — load first so all page scripts can use them -->
+  <script src="js/utils/sanitize.js" defer></script>
+  <script src="js/utils/debounce.js" defer></script>
+  <script src="js/utils/logger.js" defer></script>
+  <script src="js/utils/validator.js" defer></script>
+  <script src="js/utils/formatter.js" defer></script>
   <!-- core scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/whatsapp.js"></script>
-  <script src="js/home.js"></script>
-  <script>
+    <!-- shared services & ui -->
+  <script src="js/services/ImageService.js" defer></script>
+  <script src="js/ui/Toast.js" defer></script>
+  <script src="js/ui/Skeleton.js" defer></script>
+  <script src="js/ui/ProductCard.js" defer></script>
+  <!-- core scripts -->
+  <script src="js/config.js" defer></script>
+  <script src="js/lib/data.js" defer></script>
+  <script src="js/lib/sheetsWriter.js" defer></script>
+  <script src="js/services/CartService.js" defer></script>
+  <script src="js/cart.js" defer></script>
+  <script src="js/whatsapp.js" defer></script>
+  <script src="js/home.js" defer></script>
+  <script src="js/admin-controls.js" defer></script>
+
+  <script defer>
     document.addEventListener('DOMContentLoaded', () => {
       const waFloat = document.querySelector('.whatsapp-float');
       const waCta = document.getElementById('wa-cta-btn');

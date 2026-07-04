@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  // Record a view click (1 point)
+  trackLocalInterest(productId, 1);
+
   // Render product details
   renderProductDetails();
   
@@ -57,43 +60,113 @@ function showProductNotFound() {
  */
 function renderProductDetails() {
   // Update browser document title
-  document.title = `${currentProduct.ProductName} | House of Prime Collections`;
+  document.title = `${sanitize(currentProduct.ProductName)} | House of Prime Collections`;
   
   // Set Breadcrumbs active name
   const breadcrumbProduct = document.getElementById('breadcrumb-product-name');
-  if (breadcrumbProduct) breadcrumbProduct.textContent = currentProduct.ProductName;
+  if (breadcrumbProduct) breadcrumbProduct.textContent = sanitize(currentProduct.ProductName);
 
   // 1. Render Gallery
   const mainImg = document.getElementById('main-gallery-img');
   const mainImgContainer = document.getElementById('main-gallery-container');
   const thumbnailsContainer = document.getElementById('thumbnails-container');
 
-  if (mainImg) mainImg.src = currentProduct.ProductImageURL;
-  if (mainImgContainer && mainImg) initImageZoom(mainImg, mainImgContainer);
-
   if (thumbnailsContainer) {
     thumbnailsContainer.innerHTML = '';
-    const images = [
+    
+    // 1. Build an array of valid image URLs
+    const rawImages = [
       currentProduct.ProductImageURL,
       currentProduct.AdditionalImage1,
       currentProduct.AdditionalImage2,
       currentProduct.AdditionalImage3
-    ].filter(url => url && url.trim() !== '');
+    ];
 
+    const images = rawImages.filter(url => {
+      if (!url) return false;
+      const cleanUrl = url.toString().trim().toLowerCase();
+      if (cleanUrl === '') return false;
+      // Filter out common invalid placeholders
+      if (['null', 'undefined', 'none', 'n/a', '#', '-', '0', '(can be blank)'].includes(cleanUrl)) return false;
+      // Basic check: must have some length and not just be a space
+      if (cleanUrl.length < 2) return false;
+      return true;
+    });
+
+    // 2. Render Main Carousel Images
+    const counterEl = document.getElementById('gallery-counter');
+    if (mainImgContainer) {
+      mainImgContainer.innerHTML = '';
+      
+      if (images.length === 0) {
+        const fallbackImg = document.createElement('img');
+        fallbackImg.src = 'https://placehold.co/400x400/eeeeee/999999?text=No+Image';
+        fallbackImg.className = 'gallery__main-img';
+        mainImgContainer.appendChild(fallbackImg);
+        if (counterEl) counterEl.style.display = 'none';
+      } else {
+        images.forEach((imgUrl, idx) => {
+          // Wrapper for individual zoom context
+          const itemWrap = document.createElement('div');
+          itemWrap.style.cssText = 'flex: 0 0 100%; position: relative; scroll-snap-align: center; height: 100%;';
+          
+          const imgEl = document.createElement('img');
+          imgEl.src = imgUrl;
+          imgEl.className = 'gallery__main-img';
+          imgEl.alt = `Product view ${idx + 1}`;
+          
+          itemWrap.appendChild(imgEl);
+          mainImgContainer.appendChild(itemWrap);
+          
+          // Attach zoom to the individual wrapper
+          initImageZoom(imgEl, itemWrap);
+        });
+
+        // Initialize Counter
+        if (counterEl) {
+          if (images.length > 1) {
+            counterEl.style.display = 'block';
+            counterEl.textContent = `1 / ${images.length}`;
+            
+            // Scroll spy for counter and active thumbnail
+            mainImgContainer.addEventListener('scroll', debounce(() => {
+              const scrollLeft = mainImgContainer.scrollLeft;
+              const width = mainImgContainer.clientWidth;
+              const activeIndex = Math.round(scrollLeft / width);
+              counterEl.textContent = `${activeIndex + 1} / ${images.length}`;
+              
+              // Sync thumbnail active state
+              const thumbs = thumbnailsContainer.querySelectorAll('.gallery__thumbnail');
+              thumbs.forEach((t, i) => {
+                t.classList.toggle('active', i === activeIndex);
+              });
+            }, 50));
+          } else {
+            counterEl.style.display = 'none';
+          }
+        }
+      }
+    }
+
+    // 3. Render thumbnails only if there is MORE THAN ONE valid image
     if (images.length > 1) {
       images.forEach((imgUrl, idx) => {
         const thumb = document.createElement('div');
         thumb.className = `gallery__thumbnail ${idx === 0 ? 'active' : ''}`;
         thumb.innerHTML = `<img src="${imgUrl}" alt="Thumbnail view ${idx + 1}" loading="lazy">`;
         thumb.addEventListener('click', () => {
-          // Switch active class
-          thumbnailsContainer.querySelectorAll('.gallery__thumbnail').forEach(t => t.classList.remove('active'));
-          thumb.classList.add('active');
-          // Update main image source
-          if (mainImg) mainImg.src = imgUrl;
+          // Scroll main carousel to the correct image
+          if (mainImgContainer) {
+            const width = mainImgContainer.clientWidth;
+            mainImgContainer.scrollTo({
+              left: width * idx,
+              behavior: 'smooth'
+            });
+          }
         });
         thumbnailsContainer.appendChild(thumb);
       });
+      thumbnailsContainer.style.display = 'flex';
     } else {
       thumbnailsContainer.style.display = 'none'; // Only 1 image, hide thumbnails
     }
@@ -111,8 +184,8 @@ function renderProductDetails() {
   const colorEl = document.getElementById('spec-color');
   const weightEl = document.getElementById('spec-weight');
 
-  if (titleEl) titleEl.textContent = currentProduct.ProductName;
-  if (modelEl) modelEl.textContent = `Model: ${currentProduct.ModelNumber}`;
+  if (titleEl) titleEl.textContent = sanitize(currentProduct.ProductName);
+  if (modelEl) modelEl.textContent = `Model: ${sanitize(currentProduct.ModelNumber)}`;
   
   // Stock display
   const isOutOfStock = currentProduct.StockQuantity <= 0;
@@ -144,10 +217,10 @@ function renderProductDetails() {
   }
 
   // Specs & Description
-  if (descEl) descEl.textContent = currentProduct.Description;
-  if (materialEl) materialEl.textContent = currentProduct.Material || 'Standard Alloy';
-  if (colorEl) colorEl.textContent = currentProduct.Color || 'Assorted Colors';
-  if (weightEl) weightEl.textContent = currentProduct.Weight || 'N/A';
+  if (descEl) descEl.textContent = sanitize(currentProduct.Description);
+  if (materialEl) materialEl.textContent = sanitize(currentProduct.Material) || 'Standard Alloy';
+  if (colorEl) colorEl.textContent = sanitize(currentProduct.Color) || 'Assorted Colors';
+  if (weightEl) weightEl.textContent = sanitize(currentProduct.Weight) || 'N/A';
 
   // 3. Setup Quantity Stepper & Add/Buy Buttons
   setupQuantityStepper();
@@ -226,6 +299,7 @@ function setupActionButtons() {
   if (addToCartBtn) {
     addToCartBtn.addEventListener('click', () => {
       Cart.add(currentProduct.ProductID, selectedQty, currentProduct.StockQuantity);
+      trackLocalInterest(currentProduct.ProductID, 3); // 3 points for adding to cart
     });
   }
 
@@ -234,6 +308,7 @@ function setupActionButtons() {
     buyNowBtn.addEventListener('click', () => {
       const added = Cart.add(currentProduct.ProductID, selectedQty, currentProduct.StockQuantity);
       if (added) {
+        trackLocalInterest(currentProduct.ProductID, 3); // 3 points for adding to cart
         window.location.href = 'checkout.html';
       }
     });
@@ -243,6 +318,7 @@ function setupActionButtons() {
   if (waQuickBtn) {
     waQuickBtn.addEventListener('click', (e) => {
       e.preventDefault();
+      trackLocalInterest(currentProduct.ProductID, 5); // 5 points for quick order click
       
       const price = currentProduct.DiscountPrice !== null ? currentProduct.DiscountPrice : currentProduct.Price;
       const total = price * selectedQty;
@@ -266,93 +342,240 @@ function setupActionButtons() {
 }
 
 /**
- * Fetch and load related items from same category
+ * Fetch and load all 4 recommendation sections
  */
 async function loadRelatedProducts() {
-  const container = document.getElementById('related-row');
-  if (!container) return;
-
   try {
     const products = await fetchProducts();
+    const usedIds = new Set();
+    usedIds.add(currentProduct.ProductID); // Always exclude current product
     
-    // Filter by same category, exclude current product
-    const related = products
-      .filter(p => p.Category === currentProduct.Category && p.ProductID !== currentProduct.ProductID)
-      .slice(0, 4);
+    // 1. You May Also Like
+    const related = getRelatedProducts(products, usedIds);
+    renderRecommendationCarousel('section-related', 'related-row', related);
 
-    if (related.length === 0) {
-      // If no items in same category, show any featured items
-      const featured = products
-        .filter(p => p.ProductID !== currentProduct.ProductID)
-        .slice(0, 4);
-      renderRelatedGrid(container, featured);
-    } else {
-      renderRelatedGrid(container, related);
-    }
+    // 2. Newly Arrived
+    const newlyArrived = getNewArrivals(products, usedIds);
+    renderRecommendationCarousel('section-new', 'new-row', newlyArrived);
+
+    // 3. Most Selling
+    const bestSellers = getBestSellingProducts(products, usedIds);
+    renderRecommendationCarousel('section-best', 'best-row', bestSellers);
+
+    // 4. Trending Now
+    const trending = getTrendingProducts(products, usedIds);
+    renderRecommendationCarousel('section-trending', 'trending-row', trending);
+
   } catch (err) {
-    console.error("Failed to load related products:", err);
-    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--warm-gray);">Could not load recommendations.</p>`;
+    console.error("Failed to load recommendations:", err);
   }
 }
 
-function renderRelatedGrid(container, productList) {
+// Data Fetchers
+function getRelatedProducts(products, usedIds) {
+  let related = products.filter(p => 
+    p.Category === currentProduct.Category && 
+    !usedIds.has(p.ProductID) &&
+    p.StockQuantity > 0
+  );
+  related = related.slice(0, 8);
+  related.forEach(p => usedIds.add(p.ProductID));
+  return related;
+}
+
+function getNewArrivals(products, usedIds) {
+  let newArrivals = products
+    .filter(p => !usedIds.has(p.ProductID) && p.StockQuantity > 0)
+    .sort((a, b) => {
+      // Prioritize NewArrival flag, then fallback to descending IDs as proxy for date
+      if (a.NewArrival && !b.NewArrival) return -1;
+      if (!a.NewArrival && b.NewArrival) return 1;
+      return b.ProductID.localeCompare(a.ProductID);
+    })
+    .slice(0, 8);
+  newArrivals.forEach(p => usedIds.add(p.ProductID));
+  return newArrivals;
+}
+
+function getBestSellingProducts(products, usedIds) {
+  let bestSellers = products
+    .filter(p => !usedIds.has(p.ProductID) && p.StockQuantity > 0)
+    .sort((a, b) => {
+      const scoreA = (a.OrderCount || 0) + getLocalInterest(a.ProductID);
+      const scoreB = (b.OrderCount || 0) + getLocalInterest(b.ProductID);
+      return scoreB - scoreA;
+    })
+    .slice(0, 8);
+  bestSellers.forEach(p => usedIds.add(p.ProductID));
+  return bestSellers;
+}
+
+function getTrendingProducts(products, usedIds) {
+  let trending = products
+    .filter(p => !usedIds.has(p.ProductID) && p.StockQuantity > 0);
+    
+  // Mix of featured and popular
+  trending.sort((a, b) => {
+    if (a.FeaturedProduct && !b.FeaturedProduct) return -1;
+    if (!a.FeaturedProduct && b.FeaturedProduct) return 1;
+    // randomish shuffle for variety
+    return 0.5 - Math.random();
+  });
+  
+  trending = trending.slice(0, 8);
+  trending.forEach(p => usedIds.add(p.ProductID));
+  return trending;
+}
+
+// UI Renderers
+function createCompactProductCard(product) {
+  const hasDiscount = product.DiscountPrice !== null && product.DiscountPrice > 0;
+  const price = hasDiscount ? product.DiscountPrice : product.Price;
+  const oldPriceHtml = hasDiscount ? `<span class="compact-rec-card__old-price">${CONFIG.CURRENCY}${product.Price}</span>` : '';
+  
+  let discountPercent = '';
+  if (hasDiscount && product.Price > 0) {
+    discountPercent = Math.round(((product.Price - product.DiscountPrice) / product.Price) * 100);
+  }
+  const discountHtml = discountPercent ? `<span class="compact-rec-card__discount">${discountPercent}% OFF</span>` : '';
+  
+  let badgeHtml = '';
+  if (product.NewArrival) badgeHtml = `<span class="compact-rec-card__badge" style="background:#8b1a4a;">NEW</span>`;
+  else if (hasDiscount) badgeHtml = `<span class="compact-rec-card__badge" style="background:#f59e0b;">SALE</span>`;
+  
+  const optimizedImg = typeof ImageService !== 'undefined' 
+    ? ImageService.getOptimizedUrl(product.ProductImageURL, 300)
+    : product.ProductImageURL;
+
+  const card = document.createElement('a');
+  card.href = `product.html?id=${product.ProductID}`;
+  card.className = 'compact-rec-card';
+  card.innerHTML = `
+    <div class="compact-rec-card__img-wrap">
+      ${badgeHtml}
+      <div class="compact-rec-card__wishlist">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+      </div>
+      <img class="compact-rec-card__img" src="${sanitize(optimizedImg)}" alt="${sanitize(product.ProductName)}" loading="lazy">
+    </div>
+    <div class="compact-rec-card__info">
+      <h4 class="compact-rec-card__title">${sanitize(product.ProductName)}</h4>
+      <div class="compact-rec-card__price-row">
+        <span class="compact-rec-card__price">${CONFIG.CURRENCY}${price}</span>
+        ${oldPriceHtml}
+        ${discountHtml}
+      </div>
+    </div>
+  `;
+  
+  card.addEventListener('click', () => {
+    if (typeof trackLocalInterest === 'function') {
+      trackLocalInterest(product.ProductID, 1);
+    }
+  });
+  
+  return card;
+}
+
+function renderRecommendationCarousel(sectionId, rowId, productList) {
+  const section = document.getElementById(sectionId);
+  const container = document.getElementById(rowId);
+  
+  if (!section || !container) return;
+
+  if (productList.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
   container.innerHTML = '';
   
+  const fragment = document.createDocumentFragment();
   productList.forEach(product => {
-    const isOutOfStock = product.StockQuantity <= 0;
-    const hasDiscount = product.DiscountPrice !== null && product.DiscountPrice > 0;
+    fragment.appendChild(createCompactProductCard(product));
+  });
+  container.appendChild(fragment);
+
+  // Extract base prefix, e.g. "related" from "related-row"
+  const prefix = rowId.split('-')[0];
+  initCarousel(prefix, container);
+}
+
+function initCarousel(prefix, container) {
+  const prevBtn = document.getElementById(`${prefix}-prev`);
+  const nextBtn = document.getElementById(`${prefix}-next`);
+  const dotsContainer = document.getElementById(`${prefix}-dots`);
+  const wrapper = container.parentElement;
+
+  // Render dots
+  if (dotsContainer) {
+    const createDots = () => {
+      dotsContainer.innerHTML = '';
+      const totalPages = Math.ceil(container.scrollWidth / container.clientWidth) || 1;
+      // If content doesn't overflow, hide dots
+      if (totalPages <= 1) return;
+      
+      for (let i = 0; i < totalPages; i++) {
+        const dot = document.createElement('span');
+        if (i === 0) dot.className = 'active';
+        dot.addEventListener('click', () => {
+          container.scrollTo({ left: i * container.clientWidth, behavior: 'smooth' });
+        });
+        dotsContainer.appendChild(dot);
+      }
+    };
     
-    let badgesHtml = '';
-    if (isOutOfStock) {
-      badgesHtml += `<span class="badge badge-soldout">Out of Stock</span>`;
-    } else {
-      if (product.NewArrival) badgesHtml += `<span class="badge badge-new">New</span>`;
-      if (hasDiscount) badgesHtml += `<span class="badge badge-sale">Sale</span>`;
-    }
-
-    const pricingHtml = hasDiscount 
-      ? `<span class="price-display__current">${CONFIG.CURRENCY}${product.DiscountPrice}</span>
-         <span class="price-display__old">${CONFIG.CURRENCY}${product.Price}</span>`
-      : `<span class="price-display__current">${CONFIG.CURRENCY}${product.Price}</span>`;
-
-    const actionBtnHtml = isOutOfStock
-      ? `<button class="btn btn-primary btn-disabled" disabled>Sold Out</button>`
-      : `<button class="btn btn-primary add-to-cart-btn" data-id="${product.ProductID}" data-stock="${product.StockQuantity}" aria-label="Add to cart">
-          Add
-         </button>`;
-
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.innerHTML = `
-      <div class="product-card__img-container">
-        <div class="product-card__badges">${badgesHtml}</div>
-        <a href="product.html?id=${product.ProductID}">
-          <img class="product-card__img" src="${product.ProductImageURL}" alt="${product.ProductName}" loading="lazy">
-        </a>
-      </div>
-      <div class="product-card__content">
-        <div class="product-card__category">${product.Category}</div>
-        <h3 class="product-card__title">
-          <a href="product.html?id=${product.ProductID}">${product.ProductName}</a>
-        </h3>
-        <div class="product-card__model">Model: ${product.ModelNumber}</div>
-        <div class="product-card__footer">
-          <div class="price-display">${pricingHtml}</div>
-          ${actionBtnHtml}
-        </div>
-      </div>
-    `;
-
-    container.appendChild(card);
-  });
-
-  // Bind Add to Cart listeners
-  container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const id = btn.getAttribute('data-id');
-      const stock = parseInt(btn.getAttribute('data-stock'), 10);
-      Cart.add(id, 1, stock);
+    setTimeout(createDots, 100);
+    window.addEventListener('resize', () => {
+      clearTimeout(window[`${prefix}ResizeTimer`]);
+      window[`${prefix}ResizeTimer`] = setTimeout(createDots, 200);
     });
-  });
+    
+    container.addEventListener('scroll', () => {
+      if (!dotsContainer.children.length) return;
+      const page = Math.round(container.scrollLeft / container.clientWidth);
+      Array.from(dotsContainer.children).forEach((d, idx) => {
+        d.classList.toggle('active', idx === page);
+      });
+    }, { passive: true });
+  }
+
+  // Arrows
+  if (prevBtn && nextBtn) {
+    prevBtn.addEventListener('click', () => {
+      container.scrollBy({ left: -container.clientWidth * 0.8, behavior: 'smooth' });
+    });
+    nextBtn.addEventListener('click', () => {
+      if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: container.clientWidth * 0.8, behavior: 'smooth' });
+      }
+    });
+  }
+
+  // Auto-scroll loop
+  let autoScrollTimer;
+  const startAutoScroll = () => {
+    clearInterval(autoScrollTimer);
+    autoScrollTimer = setInterval(() => {
+      if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: container.clientWidth * 0.5, behavior: 'smooth' });
+      }
+    }, 4000 + Math.random() * 2000); // Slightly stagger intervals across multiple carousels
+  };
+  
+  const stopAutoScroll = () => clearInterval(autoScrollTimer);
+
+  if (wrapper) {
+    wrapper.addEventListener('mouseenter', stopAutoScroll);
+    wrapper.addEventListener('mouseleave', startAutoScroll);
+    wrapper.addEventListener('touchstart', stopAutoScroll, { passive: true });
+    wrapper.addEventListener('touchend', startAutoScroll, { passive: true });
+  }
+  
+  startAutoScroll();
 }

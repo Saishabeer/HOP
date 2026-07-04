@@ -79,24 +79,51 @@ async function loadHomeProducts() {
   const bestSellersRow = document.getElementById('best-sellers-row');
   
   // Show Loading Skeletons
-  showSkeletons(newArrivalsRow, 4);
-  showSkeletons(featuredRow, 3);
-  showSkeletons(bestSellersRow, 4);
+  Skeleton.showIn(newArrivalsRow, 4);
+  Skeleton.showIn(featuredRow, 3);
+  Skeleton.showIn(bestSellersRow, 4);
 
   try {
     const products = await fetchProducts();
     
-    // 1. Filter New Arrivals (Max 8)
-    const newArrivals = products.filter(p => p.NewArrival).slice(0, 8);
+    // 1. Filter New Arrivals (Max 8) - sorted by date/ID descending (newest first)
+    const newArrivals = products
+      .filter(p => p.NewArrival)
+      .sort((a, b) => {
+        const dateA = new Date(a.CreatedDate || 0);
+        const dateB = new Date(b.CreatedDate || 0);
+        if (dateB - dateA !== 0) return dateB - dateA;
+        
+        // Fallback: If one is a locally generated ID (P_TIMESTAMP), it's newer
+        if (b.ProductID.startsWith('P_') && !a.ProductID.startsWith('P_')) return -1;
+        if (a.ProductID.startsWith('P_') && !b.ProductID.startsWith('P_')) return 1;
+        
+        return b.ProductID.localeCompare(a.ProductID);
+      })
+      .slice(0, 8);
     renderProductGrid(newArrivalsRow, newArrivals);
 
-    // 2. Filter Featured (Max 6)
-    const featured = products.filter(p => p.FeaturedProduct).slice(0, 6);
+    // 2. Filter Featured (Max 6) - sorted by DisplayOrder ascending (lowest first)
+    const featured = products
+      .filter(p => p.FeaturedProduct)
+      .sort((a, b) => a.DisplayOrder - b.DisplayOrder)
+      .slice(0, 6);
     renderProductGrid(featuredRow, featured);
 
-    // 3. Filter Best Sellers (Max 8)
-    const bestSellers = products.filter(p => p.BestSeller).slice(0, 8);
+    // 3. Filter Best Sellers (Max 8) - sorted by (OrderCount + LocalInterest) descending
+    const bestSellers = products
+      .filter(p => p.BestSeller)
+      .sort((a, b) => {
+        const scoreA = (a.OrderCount || 0) + getLocalInterest(a.ProductID);
+        const scoreB = (b.OrderCount || 0) + getLocalInterest(b.ProductID);
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        return b.DisplayOrder - a.DisplayOrder;
+      })
+      .slice(0, 8);
     renderProductGrid(bestSellersRow, bestSellers);
+
+    // Dynamically render the category grid
+    renderCategoryCards(products);
 
   } catch (error) {
     console.error("Failed to load home page products:", error);
@@ -138,76 +165,8 @@ function renderProductGrid(container, productList) {
   container.innerHTML = ''; // Clear skeletons
   
   productList.forEach(product => {
-    const isOutOfStock = product.StockQuantity <= 0;
-    const hasDiscount = product.DiscountPrice !== null && product.DiscountPrice > 0;
-    const finalPrice = hasDiscount ? product.DiscountPrice : product.Price;
-    
-    // Generate Badges HTML
-    let badgesHtml = '';
-    if (isOutOfStock) {
-      badgesHtml += `<span class="badge badge-soldout">Out of Stock</span>`;
-    } else {
-      if (product.NewArrival) {
-        badgesHtml += `<span class="badge badge-new">New</span>`;
-      }
-      if (hasDiscount) {
-        badgesHtml += `<span class="badge badge-sale">Sale</span>`;
-      }
-    }
-
-    // Pricing display
-    const pricingHtml = hasDiscount 
-      ? `<span class="price-display__current">${CONFIG.CURRENCY}${product.DiscountPrice}</span>
-         <span class="price-display__old">${CONFIG.CURRENCY}${product.Price}</span>`
-      : `<span class="price-display__current">${CONFIG.CURRENCY}${product.Price}</span>`;
-
-    // Action button
-    const actionBtnHtml = isOutOfStock
-      ? `<button class="btn btn-primary btn-disabled" disabled>Sold Out</button>`
-      : `<button class="btn btn-primary add-to-cart-btn" data-id="${product.ProductID}" data-stock="${product.StockQuantity}" aria-label="Add to cart">
-          <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 24 24">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-          </svg>
-          Add
-         </button>`;
-
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.style.cursor = 'pointer';
-    card.setAttribute('role', 'link');
-    card.setAttribute('aria-label', `View ${product.ProductName}`);
-    card.innerHTML = `
-      <div class="product-card__img-container">
-        <div class="product-card__badges">${badgesHtml}</div>
-        <img class="product-card__img" src="${product.ProductImageURL}" alt="${product.ProductName}" loading="lazy">
-      </div>
-      <div class="product-card__content">
-        <div class="product-card__category">${product.Category}</div>
-        <h3 class="product-card__title">${product.ProductName}</h3>
-        <div class="product-card__model">Model: ${product.ModelNumber}</div>
-        <div class="product-card__footer">
-          <div class="price-display">${pricingHtml}</div>
-          ${actionBtnHtml}
-        </div>
-      </div>
-    `;
-
-    // Clicking anywhere on the card navigates to product page
-    card.addEventListener('click', () => {
-      window.location.href = `product.html?id=${product.ProductID}`;
-    });
-
+    const card = ProductCard.create(product, { isLink: true, showAddToCart: true });
     container.appendChild(card);
-  });
-
-  // Attach event listeners to Add to Cart buttons — stop propagation so card click doesn't fire too
-  container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation(); // prevent card navigation
-      const id = btn.getAttribute('data-id');
-      const stock = parseInt(btn.getAttribute('data-stock'), 10);
-      Cart.add(id, 1, stock);
-    });
   });
 }
 
@@ -220,4 +179,190 @@ function setupWAFloatLink() {
     waBtn.href = WhatsApp.getGeneralChatUrl();
     waBtn.target = '_blank';
   }
+}
+
+/**
+ * Load and render category cards dynamically based on active sheet categories
+ */
+function renderCategoryCards(products) {
+  const container = document.getElementById('categories-grid');
+  if (!container) return;
+
+  // Fallback cover images and icons for default categories
+  const defaultCategoryImages = {
+    'Korean Earrings': 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&auto=format&fit=crop&q=80',
+    'Stud Earrings': 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop&q=80',
+    'Fancy Earrings': 'https://images.unsplash.com/photo-1635767798638-3e25273a8236?w=600&auto=format&fit=crop&q=80',
+    'Necklaces': 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=600&auto=format&fit=crop&q=80',
+    'Rings': 'https://images.unsplash.com/photo-1605100804763-247f66129598?w=600&auto=format&fit=crop&q=80',
+    'Bracelets': 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&auto=format&fit=crop&q=80'
+  };
+
+  const categoryIcons = {
+    'Earrings': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    'Necklaces': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3v4a6 6 0 0 0 12 0V3m-6 10v8m-2 0h4"/></svg>',
+    'Rings': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="6"/><path d="M6 12a6 6 0 0 0 12 0"/></svg>',
+    'Bracelets': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h18M5 9h14M7 15h10"/></svg>',
+    'Studs': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>',
+    'default': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'
+  };
+
+  // Get all unique categories present in the active products and their counts
+  const catMap = new Map();
+  products.forEach(p => {
+    if (p.Category) {
+      catMap.set(p.Category, (catMap.get(p.Category) || 0) + 1);
+    }
+  });
+  
+  const uniqueCategories = Array.from(catMap.keys());
+  
+  // If no products/categories, leave fallback HTML in place
+  if (uniqueCategories.length === 0) {
+    initCategoryCarousel();
+    return;
+  }
+
+  container.innerHTML = ''; // Clear fallback category cards
+
+  uniqueCategories.forEach(category => {
+    // Determine cover image
+    let coverImage = defaultCategoryImages[category];
+    if (!coverImage) {
+      const firstProd = products.find(p => p.Category === category && p.ProductImageURL);
+      coverImage = firstProd ? firstProd.ProductImageURL : 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop&q=80';
+    }
+
+    // Determine icon
+    let icon = categoryIcons.default;
+    for (const [key, svg] of Object.entries(categoryIcons)) {
+      if (category.toLowerCase().includes(key.toLowerCase())) {
+        icon = svg;
+        break;
+      }
+    }
+    
+    // Count string
+    const count = catMap.get(category);
+    const countStr = count > 10 ? `${Math.floor(count/10)*10}+ Designs` : `${count} Designs`;
+
+    const card = document.createElement('a');
+    card.href = `shop.html?category=${encodeURIComponent(category)}`;
+    card.className = 'cat-card';
+    card.setAttribute('aria-label', `View all ${category}`);
+
+    card.innerHTML = `
+      <img class="cat-card__img" src="${sanitize(coverImage)}" alt="${sanitize(category)}" loading="lazy">
+      <div class="cat-card__overlay"></div>
+      <div class="cat-card__content">
+        <div class="cat-card__icon">${icon}</div>
+        <div class="cat-card__text">
+          <h3 class="cat-card__title">${sanitize(category)}</h3>
+          <span class="cat-card__count">${countStr}</span>
+        </div>
+        <div class="cat-card__arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+  
+  initCategoryCarousel();
+}
+
+/**
+ * Category Carousel Interaction & Auto-scroll logic
+ */
+function initCategoryCarousel() {
+  const container = document.getElementById('categories-grid');
+  const prevBtn = document.getElementById('cat-prev');
+  const nextBtn = document.getElementById('cat-next');
+  const dotsContainer = document.getElementById('cat-dots');
+  const wrapper = document.querySelector('.categories-carousel-wrapper');
+  
+  if (!container) return;
+
+  // Render dots based on number of cards (roughly)
+  const cards = container.querySelectorAll('.cat-card');
+  if (dotsContainer && cards.length > 0) {
+    dotsContainer.innerHTML = '';
+    // Determine how many pages we have (desktop shows 6 cards, mobile 2)
+    // We'll just create a few dots based on scroll width vs client width
+    const createDots = () => {
+      dotsContainer.innerHTML = '';
+      const totalPages = Math.ceil(container.scrollWidth / container.clientWidth) || 1;
+      for (let i = 0; i < totalPages; i++) {
+        const dot = document.createElement('span');
+        dot.className = i === 0 ? 'cat-dot active' : 'cat-dot';
+        dot.addEventListener('click', () => {
+          container.scrollTo({ left: i * container.clientWidth, behavior: 'smooth' });
+        });
+        dotsContainer.appendChild(dot);
+      }
+    };
+    
+    // Initial dot creation
+    setTimeout(createDots, 100); // Wait for layout
+    window.addEventListener('resize', () => {
+      clearTimeout(window.catResizeTimer);
+      window.catResizeTimer = setTimeout(createDots, 200);
+    });
+    
+    // Sync dots on scroll
+    container.addEventListener('scroll', () => {
+      const page = Math.round(container.scrollLeft / container.clientWidth);
+      const dots = dotsContainer.querySelectorAll('.cat-dot');
+      dots.forEach((d, idx) => {
+        d.classList.toggle('active', idx === page);
+      });
+    }, { passive: true });
+  }
+
+  // Navigation Arrows
+  if (prevBtn && nextBtn) {
+    prevBtn.addEventListener('click', () => {
+      const scrollAmt = container.clientWidth * 0.8;
+      container.scrollBy({ left: -scrollAmt, behavior: 'smooth' });
+    });
+    nextBtn.addEventListener('click', () => {
+      const scrollAmt = container.clientWidth * 0.8;
+      
+      // If at end, loop back to start
+      if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: scrollAmt, behavior: 'smooth' });
+      }
+    });
+  }
+
+  // Auto-scroll loop
+  let autoScrollTimer;
+  const startAutoScroll = () => {
+    stopAutoScroll(); // Clear existing
+    autoScrollTimer = setInterval(() => {
+      if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 10) {
+        // Loop back to start smoothly
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: container.clientWidth * 0.5, behavior: 'smooth' });
+      }
+    }, 4000);
+  };
+  
+  const stopAutoScroll = () => {
+    clearInterval(autoScrollTimer);
+  };
+
+  if (wrapper) {
+    wrapper.addEventListener('mouseenter', stopAutoScroll);
+    wrapper.addEventListener('mouseleave', startAutoScroll);
+    wrapper.addEventListener('touchstart', stopAutoScroll, { passive: true });
+    wrapper.addEventListener('touchend', startAutoScroll, { passive: true });
+  }
+  
+  // Start the auto scroll
+  startAutoScroll();
 }
