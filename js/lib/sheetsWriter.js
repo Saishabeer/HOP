@@ -234,6 +234,101 @@ async function deleteProductOnSheets(token, productId) {
 
 
 /**
+ * Bulk rename a category via Google Sheets
+ */
+async function bulkRenameCategoryOnSheets(token, oldCategory, newCategory) {
+  if (!token) throw new Error('Unauthorized: Session token missing.');
+  if (!oldCategory || !newCategory) throw new Error('Missing category name.');
+
+  if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
+
+  try {
+    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      credentials: 'omit',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        token: token,
+        action: 'rename_category',
+        oldCategory: oldCategory,
+        newCategory: newCategory
+      })
+    });
+
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to rename category.');
+    }
+    
+    // Optimistic UI cache update
+    const localRenames = JSON.parse(localStorage.getItem('hop_admin_renames') || '{}');
+    localRenames[oldCategory] = newCategory;
+    
+    // Also update any previous renames that pointed to the old category
+    Object.keys(localRenames).forEach(key => {
+      if (localRenames[key] === oldCategory) {
+        localRenames[key] = newCategory;
+      }
+    });
+    
+    localStorage.setItem('hop_admin_renames', JSON.stringify(localRenames));
+    
+    localStorage.removeItem('products_v2');
+    return data;
+  } catch (e) {
+    console.warn('[API] Rename category request failed:', e);
+    throw e;
+  }
+}
+
+/**
+ * Delete a category by migrating its products to a destination category
+ */
+async function bulkDeleteCategoryOnSheets(token, oldCategory, destinationCategory) {
+  if (!token) throw new Error('Unauthorized: Session token missing.');
+  if (!oldCategory || !destinationCategory) throw new Error('Missing category name or destination.');
+
+  if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
+
+  try {
+    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'delete_category',
+        token: token,
+        oldCategory: oldCategory,
+        destinationCategory: destinationCategory
+      })
+    });
+
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to delete category.');
+    }
+    
+    // Optimistic UI cache update (same mechanism as rename)
+    const localRenames = JSON.parse(localStorage.getItem('hop_admin_renames') || '{}');
+    localRenames[oldCategory] = destinationCategory;
+    
+    // Update any previous renames that pointed to the old category
+    Object.keys(localRenames).forEach(key => {
+      if (localRenames[key] === oldCategory) {
+        localRenames[key] = destinationCategory;
+      }
+    });
+    
+    localStorage.setItem('hop_admin_renames', JSON.stringify(localRenames));
+    
+    localStorage.removeItem('products_v2');
+    return data;
+  } catch (e) {
+    console.warn('[API] Delete category request failed:', e);
+    throw e;
+  }
+}
+
+/**
  * Upload a single image file to Cloudinary and return its secure URL
  */
 async function uploadImageToCloudinary(file) {

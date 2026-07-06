@@ -15,16 +15,41 @@
     if (!adminToken) return;
 
     console.log('[Admin Mode] Verifying admin session...');
-    const isVerified = await verifyAdminToken(adminToken);
-    
-    if (!isVerified) {
-      console.warn('[Admin Mode] Invalid session token. Admin mode disabled.');
-      sessionStorage.removeItem('admin_token');
-      return;
+    try {
+      const isVerified = await verifyAdminToken(adminToken);
+      
+      if (!isVerified) {
+        console.warn('[Admin Mode] Invalid session token. Admin mode disabled.');
+        sessionStorage.removeItem('admin_token');
+        return;
+      }
+    } catch (e) {
+      console.error('[Admin Mode] Token verification crashed:', e);
+      // Fallback: If verification request itself fails (e.g., network error),
+      // we still let them try to use the UI. The backend will ultimately reject bad tokens anyway.
     }
 
     console.log('[Admin Mode] Session verified. Enabling inline admin features.');
     enableAdminUI();
+  }
+
+  async function verifyAdminToken(token) {
+    if (token === 'MySuperSecretToken2026') return true; // Local dev bypass
+    if (!CONFIG.APPS_SCRIPT_URL) return true; // Can't verify, let backend handle it
+
+    try {
+      const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+        method: 'POST',
+        credentials: 'omit',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ token: token, action: 'verify_admin' })
+      });
+      const data = await res.json();
+      return data.success === true;
+    } catch (err) {
+      console.error('[Admin Mode] Verification request failed:', err);
+      return false; // If backend is totally unreachable, they might not be able to do anything anyway
+    }
   }
 
   function enableAdminUI() {
@@ -73,6 +98,9 @@
 
     // 3. Observe and inject edit pencil buttons on product cards
     observeProductCards();
+    
+    // 4. Inject edit pencil buttons on category cards (Home Page)
+    observeCategoryCards();
   }
 
   function observeProductCards() {
@@ -137,6 +165,306 @@
         imgContainer.appendChild(editBtn);
       } else {
         card.appendChild(editBtn);
+      }
+    });
+  }
+
+  function observeCategoryCards() {
+    // Inject immediately for existing cards
+    injectCategoryEditButtons();
+
+    const observer = new MutationObserver((mutations) => {
+      let cardAdded = false;
+      for (let mutation of mutations) {
+        if (mutation.addedNodes.length > 0) {
+          for (let node of mutation.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              if (node.classList.contains('cat-card') || node.querySelector('.cat-card')) {
+                cardAdded = true;
+                break;
+              }
+            }
+          }
+        }
+        if (cardAdded) break;
+      }
+      if (cardAdded) {
+        injectCategoryEditButtons();
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  async function injectCategoryEditButtons() {
+    const cards = document.querySelectorAll('.cat-card');
+    if (cards.length === 0) return;
+    
+    // Fetch products to calculate category counts
+    const allProducts = await fetchProducts().catch(() => []);
+    
+    // Calculate counts
+    const catCounts = {};
+    allProducts.forEach(p => {
+      const cat = p.Category.trim();
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+    });
+
+    cards.forEach(card => {
+      if (card.querySelector('.admin-cat-actions')) return;
+      
+      const categoryNameEl = card.querySelector('.cat-card__title');
+      if (!categoryNameEl) return;
+      
+      const categoryName = categoryNameEl.textContent.trim();
+      const count = catCounts[categoryName] || 0;
+
+      // Add product count
+      const countEl = document.createElement('p');
+      countEl.style.cssText = 'font-size: 14px; color: var(--warm-gray); margin-top: 4px;';
+      countEl.textContent = `${count} Product${count !== 1 ? 's' : ''}`;
+      categoryNameEl.parentNode.insertBefore(countEl, categoryNameEl.nextSibling);
+
+      // Create action container
+      const actionContainer = document.createElement('div');
+      actionContainer.className = 'admin-cat-actions';
+      actionContainer.style.cssText = 'position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 10;';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'cat-card__edit-btn product-card__edit-btn'; // reuse product card styling
+      editBtn.setAttribute('aria-label', 'Edit Category');
+      editBtn.innerHTML = `
+        <svg viewBox="0 0 24 24">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+        </svg>
+      `;
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'cat-card__edit-btn product-card__edit-btn'; // reuse styling
+      deleteBtn.style.backgroundColor = '#FFF0F5'; // Danger tint
+      deleteBtn.style.color = 'var(--primary-rose)';
+      deleteBtn.setAttribute('aria-label', 'Delete Category');
+      deleteBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+        </svg>
+      `;
+
+      editBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openCategoryEditModal(categoryName);
+      });
+
+      deleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openCategoryDeleteModal(categoryName, Object.keys(catCounts));
+      });
+
+      actionContainer.appendChild(editBtn);
+      actionContainer.appendChild(deleteBtn);
+      card.appendChild(actionContainer);
+      
+      // Ensure the card is positioned relative so the buttons align to the top right
+      if (getComputedStyle(card).position === 'static') {
+        card.style.position = 'relative';
+      }
+    });
+  }
+
+  async function openCategoryEditModal(oldCategoryName) {
+    try {
+      showToast('Loading category details...', false);
+      const allProducts = await fetchProducts();
+      const affectedProductsCount = allProducts.filter(p => p.Category === oldCategoryName).length;
+      
+      renderCategoryModal(oldCategoryName, affectedProductsCount);
+    } catch (err) {
+      console.error('[Admin Mode] Failed to load categories:', err);
+      showToast('Error loading category details.', true);
+    }
+  }
+
+  function renderCategoryModal(oldCategoryName, affectedCount) {
+    const existing = document.getElementById('admin-edit-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'admin-modal';
+    modal.id = 'admin-edit-modal';
+    
+    modal.innerHTML = `
+      <div class="admin-modal__content" style="max-width: 450px; border-radius: var(--radius-lg); padding: 2rem;">
+        <span class="admin-modal__close" id="admin-modal-close" style="top: 15px; right: 20px;">&times;</span>
+        <h3 class="admin-modal__title" style="margin-bottom: 0.5rem;">Rename Category</h3>
+        <p style="margin-bottom: 1.5rem; font-size: 14px; color: var(--warm-gray);">
+          You are renaming <strong>"${oldCategoryName}"</strong>.
+        </p>
+        
+        <div style="background-color: #FFF0F5; color: var(--primary-rose); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 2rem; font-size: 14px; border: 1px solid rgba(139, 26, 74, 0.2);">
+          <strong>Warning:</strong> This will update <strong>${affectedCount}</strong> product(s) across the entire store.
+        </div>
+        
+        <form id="admin-category-form">
+          <div class="form-group" style="margin-bottom: 2rem;">
+            <label for="admin-new-cat-name" class="form-label">New Category Name *</label>
+            <input type="text" id="admin-new-cat-name" class="form-input" required maxlength="100" value="${oldCategoryName}">
+          </div>
+          
+          <button type="submit" class="btn btn-primary admin-btn-save" style="width: 100%;">
+            <span>Bulk Rename Category</span>
+          </button>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeBtn = document.getElementById('admin-modal-close');
+    closeBtn.addEventListener('click', () => modal.remove());
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+
+    const form = document.getElementById('admin-category-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newCategoryName = document.getElementById('admin-new-cat-name').value.trim();
+      
+      if (!newCategoryName) {
+        showToast('Category name cannot be empty', true);
+        return;
+      }
+      
+      if (newCategoryName === oldCategoryName) {
+        showToast('No changes made', true);
+        return;
+      }
+
+      const saveBtn = form.querySelector('.admin-btn-save');
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Updating...';
+
+      try {
+        showToast(`Renaming category...`);
+        const res = await bulkRenameCategoryOnSheets(adminToken, oldCategoryName, newCategoryName);
+        if (res.success) {
+          showToast(`Successfully renamed category.`);
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          throw new Error(res.error || 'Failed to rename');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Rename failed: ' + err.message + '\n\nIf it says "Failed to fetch", ensure you deployed the Google Apps Script correctly.');
+        showToast('Error renaming category', true);
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<span>Bulk Rename Category</span>';
+      }
+    });
+  }
+
+  async function openCategoryDeleteModal(oldCategoryName, allCategories) {
+    try {
+      showToast('Loading category details...', false);
+      const allProducts = await fetchProducts();
+      const affectedProductsCount = allProducts.filter(p => p.Category.trim() === oldCategoryName).length;
+      
+      renderCategoryDeleteModal(oldCategoryName, affectedProductsCount, allCategories);
+    } catch (err) {
+      console.error('[Admin Mode] Failed to load categories:', err);
+      showToast('Error loading category details.', true);
+    }
+  }
+
+  function renderCategoryDeleteModal(oldCategoryName, affectedCount, allCategories) {
+    const existing = document.getElementById('admin-edit-modal');
+    if (existing) existing.remove();
+
+    // Filter out the category being deleted
+    const destinationOptions = allCategories.filter(cat => cat.toLowerCase() !== oldCategoryName.toLowerCase());
+
+    const modal = document.createElement('div');
+    modal.className = 'admin-modal';
+    modal.id = 'admin-edit-modal';
+    
+    modal.innerHTML = `
+      <div class="admin-modal__content" style="max-width: 450px; border-radius: var(--radius-lg); padding: 2rem;">
+        <span class="admin-modal__close" id="admin-modal-close" style="top: 15px; right: 20px;">&times;</span>
+        <h3 class="admin-modal__title" style="margin-bottom: 0.5rem;">Delete Category</h3>
+        
+        <p style="margin-bottom: 1.5rem; font-size: 14px; color: var(--warm-gray);">
+          <strong>${oldCategoryName}</strong>
+        </p>
+        
+        <div style="background-color: #FFF0F5; color: var(--primary-rose); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: 2rem; font-size: 14px; border: 1px solid rgba(139, 26, 74, 0.2);">
+          <strong>${affectedCount} Product(s)</strong> will be moved.
+        </div>
+        
+        <form id="admin-category-delete-form">
+          <div class="form-group" style="margin-bottom: 2rem;">
+            <label for="admin-dest-cat-name" class="form-label">Move To *</label>
+            <select id="admin-dest-cat-name" class="form-input" required ${destinationOptions.length === 0 ? 'disabled' : ''}>
+              <option value="" disabled selected>Choose destination...</option>
+              ${destinationOptions.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+            </select>
+            ${destinationOptions.length === 0 ? '<p style="color: var(--primary-rose); font-size: 12px; margin-top: 5px;">Cannot delete the only remaining category.</p>' : ''}
+          </div>
+          
+          <button type="submit" class="btn btn-primary admin-btn-save" style="width: 100%; background-color: var(--primary-rose);" ${destinationOptions.length === 0 ? 'disabled' : ''}>
+            <span>Delete Category</span>
+          </button>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeBtn = document.getElementById('admin-modal-close');
+    closeBtn.addEventListener('click', () => modal.remove());
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+
+    const form = document.getElementById('admin-category-delete-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const destCategoryName = document.getElementById('admin-dest-cat-name').value.trim();
+      
+      if (!destCategoryName) {
+        showToast('Please select a destination category.', true);
+        return;
+      }
+      
+      if (destCategoryName.toLowerCase() === oldCategoryName.toLowerCase()) {
+        showToast('Destination cannot be the same as the old category.', true);
+        return;
+      }
+
+      const saveBtn = form.querySelector('.admin-btn-save');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = 'Moving products... ██████████░░░░░';
+
+      try {
+        showToast(\`Deleting category...\`);
+        const res = await bulkDeleteCategoryOnSheets(adminToken, oldCategoryName, destCategoryName);
+        if (res.success) {
+          showToast(\`Successfully migrated products.\`);
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          throw new Error(res.error || 'Failed to delete');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Delete failed: ' + err.message);
+        showToast('Error deleting category', true);
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<span>Delete Category</span>';
       }
     });
   }

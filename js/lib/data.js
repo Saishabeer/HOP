@@ -63,6 +63,13 @@ function parseSheetData(gvizJson) {
       CreatedDate: item.CreatedDate || '',
       OrderCount: Number(item.OrderCount) || 0
     };
+
+    // Apply optimistic category renames
+    const localRenames = JSON.parse(localStorage.getItem('hop_admin_renames') || '{}');
+    if (localRenames[item.Category]) {
+      item.Category = localRenames[item.Category];
+    }
+
   }).filter(item => item.ProductID && item.Status === 'Active');
 }
 

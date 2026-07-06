@@ -66,106 +66,11 @@
     </button>
   </div>
 
-  <!-- ADMIN PANEL SECTION -->
-  <div id="admin-section" class="admin-container">
-    <div class="header-logo">HOUSE OF PRIME</div>
-    <div class="header-sub">ADD NEW PRODUCT</div>
-    
-    <form id="product-form">
-      <div class="form-row">
-        <div class="form-group" style="flex: 2;">
-          <label class="form-label" for="product-name">Product Name *</label>
-          <input type="text" id="product-name" class="form-input" required>
-        </div>
-        <div class="form-group" style="flex: 1;">
-          <label class="form-label" for="product-model">Model Number *</label>
-          <input type="text" id="product-model" class="form-input" placeholder="e.g. KR-001" required>
-          <div id="model-status" style="font-size: 12px; margin-top: 4px; font-weight: 500;"></div>
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="product-price">Price (Rs.) *</label>
-          <input type="number" id="product-price" class="form-input" required min="1">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="product-discount">Discount Price (Rs.)</label>
-          <input type="number" id="product-discount" class="form-input" min="1">
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group" style="flex: 2;">
-          <label class="form-label" for="product-category">Category *</label>
-          <select id="product-category" class="form-select" required>
-            <option value="Korean Earrings">Korean Earrings</option>
-            <option value="Stud Earrings">Stud Earrings</option>
-            <option value="Fancy Earrings">Fancy Earrings</option>
-            <option value="add_new" style="font-weight: bold; color: var(--primary-rose);">+ Add New Category</option>
-          </select>
-          <input type="text" id="new-category-input" class="form-input" placeholder="Enter new category name" style="display: none; margin-top: 8px;">
-        </div>
-        <div class="form-group" style="flex: 1;">
-          <label class="form-label" for="product-stock">Stock *</label>
-          <input type="number" id="product-stock" class="form-input" required min="0" value="50">
-        </div>
-        <div class="form-group" style="flex: 1;">
-          <label class="form-label" for="product-display-order">Display Order</label>
-          <input type="number" id="product-display-order" class="form-input" min="1" value="99">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="product-material">Material</label>
-          <input type="text" id="product-material" class="form-input" placeholder="e.g. Alloy, Pearls">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="product-color">Color</label>
-          <input type="text" id="product-color" class="form-input" placeholder="e.g. Gold, White">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="product-weight">Weight</label>
-          <input type="text" id="product-weight" class="form-input" placeholder="e.g. 5g">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="product-desc">Description</label>
-        <textarea id="product-desc" class="form-textarea" placeholder="Max 500 characters..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="product-images">Product Images * (Up to 4 images)</label>
-        <input type="file" id="product-images" class="form-input" accept="image/jpeg, image/png, image/webp" multiple required>
-        <div class="image-preview-container" id="image-preview-container">
-          <!-- Image previews appended here -->
-        </div>
-      </div>
-      
-      <div class="form-row" style="margin-bottom: 1.5rem; gap: 1rem;">
-        <label style="display:flex; align-items:center; gap:8px; font-family:'DM Sans',sans-serif; cursor:pointer;">
-          <input type="checkbox" id="flag-new"> New Arrival
-        </label>
-        <label style="display:flex; align-items:center; gap:8px; font-family:'DM Sans',sans-serif; cursor:pointer;">
-          <input type="checkbox" id="flag-featured"> Featured
-        </label>
-        <label style="display:flex; align-items:center; gap:8px; font-family:'DM Sans',sans-serif; cursor:pointer;">
-          <input type="checkbox" id="flag-bestseller"> Best Seller
-        </label>
-      </div>
-
-      <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%;">
-        <span id="submit-text">Upload Product</span>
-        <div id="submit-loader" class="loader"></div>
-      </button>
-      
-      <div style="text-align: center; margin-top: 1rem;">
-        <a href="#" id="logout-btn" style="color: var(--warm-gray); text-decoration: underline; font-family: 'DM Sans', sans-serif; font-size: 14px;">Logout</a>
-      </div>
-    </form>
   </div>
+
+  <!-- Note: The actual Admin tools (Add Product, Edit, Delete) are now seamlessly integrated 
+       into the storefront (index.html, shop.html) via js/admin-controls.js.
+       Once logged in here, you are redirected back to the storefront where the tools will appear. -->
 
     <!-- utils — load first -->
   <script src="js/utils/sanitize.js" defer></script>

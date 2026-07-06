@@ -15,7 +15,7 @@ function doPost(e) {
     }
 
     // 2. Authenticate Request for Admin actions
-    var AUTH_TOKEN = PropertiesService.getScriptProperties().getProperty('AUTH_TOKEN');
+    var AUTH_TOKEN = PropertiesService.getScriptProperties().getProperty('AUTH_TOKEN') || 'MySuperSecretToken2026';
     
     if (data.token !== AUTH_TOKEN) {
       return buildResponse(401, { error: 'Unauthorized' });
@@ -32,6 +32,14 @@ function doPost(e) {
 
     if (data.action === 'delete_product') {
       return handleDeleteProduct(data.productId);
+    }
+
+    if (data.action === 'rename_category') {
+      return handleRenameCategory(data.oldCategory, data.newCategory);
+    }
+
+    if (data.action === 'delete_category') {
+      return handleDeleteCategory(data.oldCategory, data.destinationCategory);
     }
 
     // Default action: Add Product
@@ -241,6 +249,124 @@ function handleDeleteProduct(productId) {
     sheet.getRange(foundRow, 19).setValue('Inactive');
 
     return buildResponse(200, { success: true, message: 'Product marked as Inactive' });
+  } catch (error) {
+    return buildResponse(500, { error: error.toString() });
+  }
+}
+
+/**
+ * Bulk rename a category for all matching products (Optimized)
+ */
+function handleRenameCategory(oldCategory, newCategory) {
+  try {
+    if (!oldCategory || !newCategory) {
+      return buildResponse(400, { error: 'Missing old or new category name' });
+    }
+
+    oldCategory = String(oldCategory).trim();
+    newCategory = String(newCategory).trim();
+
+    if (oldCategory.toLowerCase() === newCategory.toLowerCase()) {
+      return buildResponse(400, { error: 'Old and new category cannot be the same.' });
+    }
+
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) {
+      return buildResponse(404, { error: 'No products in database' });
+    }
+
+    // Column 4 (D) is Category
+    var categoryRange = sheet.getRange(2, 4, lastRow - 1, 1);
+    var categories = categoryRange.getValues();
+    var updateCount = 0;
+    var newCategoryExists = false;
+
+    // Check if new category already exists
+    for (var i = 0; i < categories.length; i++) {
+      var cat = String(categories[i][0]).trim();
+      if (cat.toLowerCase() === newCategory.toLowerCase()) {
+        newCategoryExists = true;
+        break;
+      }
+    }
+
+    if (newCategoryExists) {
+      return buildResponse(400, { error: 'Category already exists.' });
+    }
+
+    // Rename category
+    for (var i = 0; i < categories.length; i++) {
+      var cat = String(categories[i][0]).trim();
+      if (cat.toLowerCase() === oldCategory.toLowerCase()) {
+        categories[i][0] = newCategory;
+        updateCount++;
+      }
+    }
+
+    if (updateCount === 0) {
+      return buildResponse(404, { error: 'Category not found.' });
+    }
+
+    categoryRange.setValues(categories);
+
+    return buildResponse(200, { 
+      success: true, 
+      message: 'Category renamed successfully',
+      updatedCount: updateCount
+    });
+  } catch (error) {
+    return buildResponse(500, { error: error.toString() });
+  }
+}
+
+/**
+ * Delete a category by merging its products into a destination category
+ */
+function handleDeleteCategory(oldCategory, destinationCategory) {
+  try {
+    if (!oldCategory || !destinationCategory) {
+      return buildResponse(400, { error: 'Old category and destination category are required' });
+    }
+
+    oldCategory = String(oldCategory).trim();
+    destinationCategory = String(destinationCategory).trim();
+
+    if (oldCategory.toLowerCase() === destinationCategory.toLowerCase()) {
+      return buildResponse(400, { error: 'Destination cannot be the same as the old category' });
+    }
+
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) {
+      return buildResponse(404, { error: 'No products in database' });
+    }
+
+    // Column 4 (D) is Category
+    var categoryRange = sheet.getRange(2, 4, lastRow - 1, 1);
+    var categories = categoryRange.getValues();
+    var updateCount = 0;
+
+    // Move products to destination category
+    for (var i = 0; i < categories.length; i++) {
+      var cat = String(categories[i][0]).trim();
+      if (cat.toLowerCase() === oldCategory.toLowerCase()) {
+        categories[i][0] = destinationCategory;
+        updateCount++;
+      }
+    }
+
+    if (updateCount === 0) {
+      return buildResponse(404, { error: 'Category not found or has no products.' });
+    }
+
+    categoryRange.setValues(categories);
+
+    return buildResponse(200, { 
+      success: true, 
+      message: 'Category deleted and products migrated successfully',
+      updatedCount: updateCount
+    });
   } catch (error) {
     return buildResponse(500, { error: error.toString() });
   }

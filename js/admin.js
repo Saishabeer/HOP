@@ -34,7 +34,19 @@ function init() {
 
   // If already authenticated, go straight to the storefront admin overlay
   if (sessionToken) {
-    window.location.href = 'index.html';
+    // Add a small visual delay and alert so the user understands what is happening
+    loginSection.innerHTML = `
+      <div style="text-align: center; padding: 2rem;">
+        <h2 style="color: var(--primary-rose); margin-bottom: 1rem;">Admin Session Active</h2>
+        <p style="color: var(--warm-gray); margin-bottom: 2rem;">You are already logged in!</p>
+        <p>Redirecting you to the <strong>Storefront Inline Editor</strong>...</p>
+      </div>
+    `;
+    loginSection.style.display = 'block';
+    
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 2500);
     return;
   }
 
