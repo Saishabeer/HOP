@@ -212,7 +212,11 @@ function handleEditProduct(product) {
     sheet.getRange(foundRow, 7).setValue(product.DiscountPrice ? Number(product.DiscountPrice) : '');
     sheet.getRange(foundRow, 8).setValue(Number(product.StockQuantity));
     sheet.getRange(foundRow, 9).setValue(product.ProductImageURL || '');
-    
+
+    if (product.AdditionalImage1 !== undefined) sheet.getRange(foundRow, 10).setValue(product.AdditionalImage1 || '');
+    if (product.AdditionalImage2 !== undefined) sheet.getRange(foundRow, 11).setValue(product.AdditionalImage2 || '');
+    if (product.AdditionalImage3 !== undefined) sheet.getRange(foundRow, 12).setValue(product.AdditionalImage3 || '');
+
     if (product.Material !== undefined) sheet.getRange(foundRow, 13).setValue(product.Material.trim());
     if (product.Color !== undefined) sheet.getRange(foundRow, 14).setValue(product.Color.trim());
     if (product.Weight !== undefined) sheet.getRange(foundRow, 15).setValue(product.Weight.trim());

@@ -124,8 +124,8 @@ p {
 
 .toast {
   pointer-events: auto;
-  background-color: var(--deep-charcoal);
-  color: var(--ivory-white);
+  background-color: var(--toast-bg);
+  color: var(--text-on-accent);
   padding: 12px 20px;
   border-radius: 6px;
   box-shadow: var(--shadow-lg);
@@ -184,7 +184,7 @@ p {
 
 .badge-new {
   background-color: var(--primary-rose);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
 }
 
 .badge-sale {
@@ -194,7 +194,7 @@ p {
 
 .badge-soldout {
   background-color: var(--warm-gray);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
 }
 
 /* Section Transitions */

@@ -88,9 +88,15 @@ async function loadBanners() {
     
     banners.forEach((banner, index) => {
       const activeClass = index === 0 ? 'active' : '';
+      // Hero banners are uploaded straight from admin (often full camera resolution,
+      // several MB each) -- route through the same Cloudinary optimization used for
+      // product images instead of shipping the raw file to every visitor.
+      const optimizedBannerUrl = typeof ImageService !== 'undefined'
+        ? ImageService.getOptimizedUrl(banner.ImageURL, 1600)
+        : banner.ImageURL;
       sliderHtml += `
         <div class="hero__slide ${activeClass}" data-banner-id="${banner.BannerID}">
-          <img class="hero__slide-bg" src="${sanitize(banner.ImageURL)}" alt="${sanitize(banner.Title)}" ${index === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>
+          <img class="hero__slide-bg" src="${sanitize(optimizedBannerUrl)}" alt="${sanitize(banner.Title)}" ${index === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>
           <div class="hero__slide-overlay"></div>
           <div class="hero__content">
             ${banner.Subtitle ? `<span class="hero__subtitle">${sanitize(banner.Subtitle)}</span>` : ''}
@@ -270,7 +276,9 @@ function renderCategoryCards(products) {
     let coverImage = defaultCategoryImages[category];
     if (!coverImage) {
       const firstProd = products.find(p => p.Category === category && p.ProductImageURL);
-      coverImage = firstProd ? firstProd.ProductImageURL : 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop&q=80';
+      coverImage = firstProd
+        ? (typeof ImageService !== 'undefined' ? ImageService.getOptimizedUrl(firstProd.ProductImageURL, 400) : firstProd.ProductImageURL)
+        : 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop&q=80';
     }
 
     // Determine icon

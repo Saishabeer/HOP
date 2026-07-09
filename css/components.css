@@ -24,7 +24,7 @@
 /* Button variants */
 .btn-primary {
   background-color: var(--primary-rose);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
 }
 
 .btn-primary:hover {
@@ -47,7 +47,7 @@
 
 .btn-outline:hover {
   background-color: var(--primary-rose);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
 }
 
 .btn-secondary {
@@ -237,12 +237,12 @@
   position: relative;
   z-index: 3;
   padding: 16px;
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
   width: 100%;
 }
 
 .category-card__title {
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
   font-family: var(--font-heading);
   font-size: 1.25rem;
   margin-bottom: 2px;
@@ -305,7 +305,7 @@
 }
 
 .shimmer-box {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--velvet-cream) 25%, var(--ivory-white) 50%, var(--velvet-cream) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -398,6 +398,7 @@
   width: 80px;
   height: 80px;
   opacity: 0.3;
+  fill: var(--warm-gray);
 }
 
 .empty-state__title {
@@ -438,7 +439,7 @@
 
 .product-card__edit-btn:hover {
   background-color: var(--primary-rose);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
   border-color: var(--primary-rose);
   transform: scale(1.1);
 }
@@ -446,6 +447,34 @@
 .product-card__edit-btn svg {
   width: 16px;
   height: 16px;
+  fill: currentColor;
+}
+
+.product-detail__edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 50px;
+  background-color: var(--ivory-white);
+  border: 1px solid var(--primary-rose);
+  color: var(--primary-rose);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.product-detail__edit-btn:hover {
+  background-color: var(--primary-rose);
+  color: var(--text-on-accent);
+}
+
+.product-detail__edit-btn svg {
+  width: 14px;
+  height: 14px;
   fill: currentColor;
 }
 
@@ -531,7 +560,7 @@
   font-family: var(--font-body);
   font-size: 16px; /* prevent iOS auto-zoom */
   color: var(--deep-charcoal);
-  background-color: #ffffff;
+  background-color: var(--ivory-white);
 }
 
 .admin-form-textarea {
@@ -577,7 +606,15 @@
 .admin-modal__buttons {
   display: flex;
   gap: 12px;
-  margin-top: 12px;
+  /* Sticky footer: the form can grow taller than the modal's max-height (e.g.
+     with the additional-image fields), so without this the Save/Delete
+     buttons scroll out of view and clicks land on whatever's behind them. */
+  position: sticky;
+  bottom: 0;
+  margin: 12px -28px -28px;
+  padding: 12px 28px 28px;
+  background-color: var(--ivory-white);
+  border-top: 1px solid var(--velvet-cream);
 }
 
 .btn-admin-save {
@@ -589,6 +626,25 @@
 
 .btn-admin-save:hover {
   background-color: var(--deep-rose);
+}
+
+.admin-modal__img-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #ffcdd2;
+  background-color: #ffebee;
+  color: #c62828;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.admin-modal__img-remove:hover {
+  background-color: #c62828;
+  color: #ffffff;
+  border-color: #c62828;
 }
 
 .btn-admin-delete {
@@ -617,7 +673,7 @@
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%) translateY(100px);
-  background: var(--deep-charcoal);
+  background: var(--toast-bg);
   color: white;
   padding: 12px 24px;
   border-radius: 4px;

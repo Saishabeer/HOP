@@ -111,9 +111,12 @@ async function renderCartPage() {
            <span class="price-display__old" style="font-size: 0.75rem;">${CONFIG.CURRENCY}${product.Price}</span>`
         : `<span class="price-display__current">${CONFIG.CURRENCY}${product.Price}</span>`;
 
+      const cartImgUrl = typeof ImageService !== 'undefined'
+        ? ImageService.getOptimizedUrl(product.ProductImageURL, 200)
+        : product.ProductImageURL;
       card.innerHTML = `
         <div class="cart-item__img-wrapper">
-          <img src="${sanitize(product.ProductImageURL)}" alt="${sanitize(product.ProductName)}" loading="lazy">
+          <img src="${sanitize(cartImgUrl)}" alt="${sanitize(product.ProductName)}" loading="lazy">
         </div>
         <div class="cart-item__info">
           <h3 class="cart-item__name"><a href="product.html?id=${product.ProductID}">${sanitize(product.ProductName)}</a></h3>

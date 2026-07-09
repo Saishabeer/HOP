@@ -20,6 +20,12 @@
   --wa-green: #25D366;
   --wa-green-hover: #128C7E;
 
+  /* Fixed roles that must NOT flip with the theme: text sitting on saturated
+     brand-color buttons/badges (always light), and the toast's own chrome
+     (always dark, for consistent contrast regardless of page theme). */
+  --text-on-accent: #FDF8F4;
+  --toast-bg: #2D2D2D;
+
   /* Typography */
   --font-display: 'Cormorant Garamond', serif;
   --font-heading: 'Playfair Display', serif;
@@ -46,4 +52,47 @@
   /* Layout */
   --max-width: 1200px;
   --header-height: 70px;
+}
+
+/* --- DARK THEME ---
+   Only the neutrals (surfaces, text, borders) and shadow strength flip here;
+   --text-on-accent / --toast-bg are intentionally NOT redefined (see above).
+   Brand rose/gold are nudged brighter so they stay vivid on dark surfaces
+   instead of looking muddy, while remaining clearly "the same" brand. */
+:root[data-theme="dark"] {
+  --primary-rose: #C4547A;
+  --blush-pink: #D97FA0;
+  --champagne-gold: #E0BC77;
+  --ivory-white: #1F1A18;
+  --velvet-cream: #332C29;
+  --deep-charcoal: #F0E9E4;
+  --warm-gray: #ABA39D;
+  /* --deep-rose intentionally NOT overridden: it's the footer's fixed dark
+     background (shouldn't turn light-pink in dark mode) and also the
+     hover-darken shade for primary buttons -- #5C0F2E still reads as a
+     natural "darken on hover" against the brighter dark-mode primary-rose. */
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 26px rgba(0, 0, 0, 0.5);
+  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+/* Respect OS-level dark mode for first-time visitors who haven't toggled
+   yet (theme-init.js overrides this with their saved choice once they do). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --primary-rose: #C4547A;
+    --blush-pink: #D97FA0;
+    --champagne-gold: #E0BC77;
+    --ivory-white: #1F1A18;
+    --velvet-cream: #332C29;
+    --deep-charcoal: #F0E9E4;
+    --warm-gray: #ABA39D;
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 8px 26px rgba(0, 0, 0, 0.5);
+    --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.55);
+  }
 }

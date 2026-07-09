@@ -4,6 +4,9 @@
 (function() {
   let adminToken = sessionStorage.getItem('admin_token');
   let activeProduct = null;
+  // Slots (1-3) the admin explicitly cleared via the "x" button on the current
+  // modal, so handleSubmitProduct knows to save '' instead of keeping the old URL.
+  let removedAdditionalImages = new Set();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAdminMode);
@@ -21,6 +24,10 @@
       if (!isVerified) {
         logger.warn('[Admin Mode]', 'Invalid session token. Admin mode disabled.');
         sessionStorage.removeItem('admin_token');
+        // Surface this instead of silently dropping back to the plain storefront
+        // view with no explanation -- that previously looked like a broken
+        // redirect rather than a rejected/expired session.
+        showToast('Admin session rejected by the server. Please log in again from admin.html.', true);
         return;
       }
     } catch (e) {
@@ -82,12 +89,38 @@
 
     // 3. Observe and inject edit pencil buttons on product cards
     observeProductCards();
-    
+
     // 4. Inject edit pencil buttons on category cards (Home Page)
     observeCategoryCards();
 
     // 5. Inject Banner Admin UI (Home Page)
     injectBannerAdminUI();
+
+    // 6. Inject an Edit button on the product detail page itself, so admins
+    // don't have to go back to a shop/home grid to edit what they're viewing.
+    injectProductDetailEditButton();
+  }
+
+  function injectProductDetailEditButton() {
+    if (!window.location.pathname.endsWith('product.html')) return;
+
+    const productId = new URLSearchParams(window.location.search).get('id');
+    const titleEl = document.getElementById('product-title');
+    if (!productId || !titleEl || document.getElementById('product-detail-edit-btn')) return;
+
+    const editBtn = document.createElement('button');
+    editBtn.id = 'product-detail-edit-btn';
+    editBtn.className = 'product-detail__edit-btn';
+    editBtn.innerHTML = `
+      <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      <span>Edit Product</span>
+    `;
+    editBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openEditModal(productId);
+    });
+
+    titleEl.insertAdjacentElement('afterend', editBtn);
   }
 
   function injectBannerAdminUI() {
@@ -824,6 +857,17 @@
             </div>
           </div>
 
+          <div class="admin-form-group">
+            <label>Additional Images (optional, up to 3 — shown as a gallery on the product page)</label>
+            ${[1, 2, 3].map(n => `
+              <div class="admin-modal__img-row" style="margin-bottom: 8px;">
+                <img src="${isEdit ? (activeProduct['AdditionalImage' + n] || 'https://placehold.co/100?text=+') : 'https://placehold.co/100?text=+'}" class="admin-modal__img-preview" id="admin-edit-img-preview-${n}" alt="Additional preview ${n}">
+                <input type="file" id="admin-edit-img-file-${n}" class="admin-form-input" accept="image/jpeg, image/png, image/webp">
+                ${isEdit && activeProduct['AdditionalImage' + n] ? `<button type="button" class="admin-modal__img-remove" data-slot="${n}" title="Remove this image">&times;</button>` : ''}
+              </div>
+            `).join('')}
+          </div>
+
           <div class="admin-modal__buttons">
             ${isEdit ? '<button type="button" class="btn btn-admin-delete" id="admin-delete-btn">Delete Product</button>' : ''}
             <button type="submit" class="btn btn-admin-save" id="admin-save-btn">
@@ -842,18 +886,40 @@
       if (e.target === modal) closeModal();
     });
 
-    // Image preview updates
+    // Image preview updates (main + up to 3 additional gallery images)
     const fileInput = document.getElementById('admin-edit-img-file');
     const imgPreview = document.getElementById('admin-edit-img-preview');
-    
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          imgPreview.src = event.target.result;
-        };
-      }
+
+    function wireImagePreview(input, preview) {
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            preview.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    wireImagePreview(fileInput, imgPreview);
+
+    removedAdditionalImages = new Set();
+    [1, 2, 3].forEach(n => {
+      const addlInput = document.getElementById(`admin-edit-img-file-${n}`);
+      const addlPreview = document.getElementById(`admin-edit-img-preview-${n}`);
+      wireImagePreview(addlInput, addlPreview);
+      addlInput.addEventListener('change', () => removedAdditionalImages.delete(n));
+    });
+    modal.querySelectorAll('.admin-modal__img-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const n = Number(btn.dataset.slot);
+        removedAdditionalImages.add(n);
+        document.getElementById(`admin-edit-img-file-${n}`).value = '';
+        document.getElementById(`admin-edit-img-preview-${n}`).src = 'https://placehold.co/100?text=+';
+        btn.remove();
+      });
     });
 
     // Toggle new category input
@@ -938,6 +1004,22 @@
         finalImageUrl = await uploadImageToCloudinary(fileInput.files[0]);
       }
 
+      // 1b. Upload any changed additional (gallery) images, keep existing ones
+      // untouched, and clear any the admin removed via the "x" button.
+      const additionalImages = {};
+      for (const n of [1, 2, 3]) {
+        const key = 'AdditionalImage' + n;
+        const addlFileInput = document.getElementById(`admin-edit-img-file-${n}`);
+        if (addlFileInput.files && addlFileInput.files[0]) {
+          showToast(`Uploading additional image ${n}...`, false);
+          additionalImages[key] = await uploadImageToCloudinary(addlFileInput.files[0]);
+        } else if (removedAdditionalImages.has(n)) {
+          additionalImages[key] = '';
+        } else {
+          additionalImages[key] = activeProduct ? (activeProduct[key] || '') : '';
+        }
+      }
+
       // 2. Build payload maintaining structural properties
       const productPayload = {
         ProductName: name,
@@ -947,6 +1029,7 @@
         StockQuantity: stockVal,
         Description: desc,
         ProductImageURL: finalImageUrl,
+        ...additionalImages,
         Material: activeProduct ? (activeProduct.Material || '') : '',
         Color: activeProduct ? (activeProduct.Color || '') : '',
         Weight: activeProduct ? (activeProduct.Weight || '') : '',
@@ -964,11 +1047,24 @@
         
         showToast('Saving changes to Google Sheet...', false);
         await editProductOnSheets(adminToken, productPayload);
-        
+
         // Update the local storage cache
         localStorage.removeItem('products_v2');
         updateProductCardInUI(productPayload);
-        showToast('✅ Product updated successfully.');
+
+        // updateProductCardInUI only refreshes .product-card grid tiles (shop/home
+        // listings) -- it can't patch the product detail page's own image gallery.
+        // If we're editing the product whose own page we're currently viewing,
+        // reload so the gallery picks up the newly saved images.
+        const onThisProductsPage = window.location.pathname.endsWith('product.html') &&
+          new URLSearchParams(window.location.search).get('id') === productPayload.ProductID;
+
+        if (onThisProductsPage) {
+          showToast('✅ Product updated. Reloading to refresh the gallery...');
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showToast('✅ Product updated successfully.');
+        }
       } else {
         showToast('Adding new product to Google Sheet...', false);
         await addProductOnSheets(adminToken, productPayload);

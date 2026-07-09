@@ -54,6 +54,49 @@
   transition: transform 0.1s ease-out;
 }
 
+.gallery__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--deep-charcoal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+  z-index: 5;
+}
+
+.gallery__arrow:hover {
+  background: var(--ivory-white);
+  color: var(--primary-rose);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.gallery__arrow svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.gallery__arrow--prev {
+  left: 12px;
+}
+
+.gallery__arrow--next {
+  right: 12px;
+}
+
+/* No shrink on small screens: this site is 90%+ mobile traffic, and 42px
+   keeps the arrows comfortably tappable (close to the 44px touch-target
+   guideline) instead of shrinking exactly where most visitors need them most. */
+
 .gallery__counter {
   position: absolute;
   bottom: 12px;
@@ -169,7 +212,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: #fff;
+  background: var(--ivory-white);
   border: 1px solid var(--velvet-cream);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.02);
@@ -182,7 +225,7 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: var(--cream-bg);
+  background: var(--velvet-cream);
   color: var(--primary-rose);
 }
 
@@ -258,7 +301,7 @@
 /* Specific buttons styling */
 .btn-wa-order {
   background-color: var(--wa-green);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
   font-weight: 700;
   height: 52px;
   border-radius: 12px;
@@ -283,7 +326,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #ffffff;
+    background: var(--ivory-white);
     padding: 16px;
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
     z-index: 100;
@@ -377,7 +420,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--ivory-white);
   border: 1px solid var(--velvet-cream);
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   display: flex;
@@ -451,7 +494,7 @@
 .compact-rec-card {
   flex: 0 0 calc(20% - 12.8px); /* 5 cards on desktop */
   scroll-snap-align: start;
-  background: #fff;
+  background: var(--ivory-white);
   border: 1px solid var(--velvet-cream);
   border-radius: 12px;
   overflow: hidden;

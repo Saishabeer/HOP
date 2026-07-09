@@ -95,23 +95,36 @@ function renderProductDetails() {
 
     // 2. Render Main Carousel Images
     const counterEl = document.getElementById('gallery-counter');
+    const prevBtn = document.getElementById('gallery-prev-btn');
+    const nextBtn = document.getElementById('gallery-next-btn');
+
+    function scrollToIndex(idx) {
+      if (!mainImgContainer) return;
+      const width = mainImgContainer.clientWidth;
+      mainImgContainer.scrollTo({ left: width * idx, behavior: 'smooth' });
+    }
+
     if (mainImgContainer) {
       mainImgContainer.innerHTML = '';
-      
+
       if (images.length === 0) {
         const fallbackImg = document.createElement('img');
         fallbackImg.src = 'https://placehold.co/400x400/eeeeee/999999?text=No+Image';
         fallbackImg.className = 'gallery__main-img';
         mainImgContainer.appendChild(fallbackImg);
         if (counterEl) counterEl.style.display = 'none';
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
       } else {
         images.forEach((imgUrl, idx) => {
           // Wrapper for individual zoom context
           const itemWrap = document.createElement('div');
           itemWrap.style.cssText = 'flex: 0 0 100%; position: relative; scroll-snap-align: center; height: 100%;';
-          
+
           const imgEl = document.createElement('img');
-          imgEl.src = imgUrl;
+          // 1200px keeps the 2x hover-zoom (see zoom.js) looking sharp while still
+          // being a fraction of the multi-MB raw uploads admins add products with.
+          imgEl.src = typeof ImageService !== 'undefined' ? ImageService.getOptimizedUrl(imgUrl, 1200) : imgUrl;
           imgEl.className = 'gallery__main-img';
           imgEl.alt = `Product view ${idx + 1}`;
           
@@ -122,27 +135,46 @@ function renderProductDetails() {
           initImageZoom(imgEl, itemWrap);
         });
 
-        // Initialize Counter
+        // Initialize Counter + prev/next arrows
         if (counterEl) {
           if (images.length > 1) {
             counterEl.style.display = 'block';
             counterEl.textContent = `1 / ${images.length}`;
-            
+            if (prevBtn) prevBtn.style.display = 'flex';
+            if (nextBtn) nextBtn.style.display = 'flex';
+
             // Scroll spy for counter and active thumbnail
             mainImgContainer.addEventListener('scroll', debounce(() => {
               const scrollLeft = mainImgContainer.scrollLeft;
               const width = mainImgContainer.clientWidth;
               const activeIndex = Math.round(scrollLeft / width);
               counterEl.textContent = `${activeIndex + 1} / ${images.length}`;
-              
+
               // Sync thumbnail active state
               const thumbs = thumbnailsContainer.querySelectorAll('.gallery__thumbnail');
               thumbs.forEach((t, i) => {
                 t.classList.toggle('active', i === activeIndex);
               });
             }, 50));
+
+            if (prevBtn) {
+              prevBtn.onclick = () => {
+                const width = mainImgContainer.clientWidth;
+                const current = Math.round(mainImgContainer.scrollLeft / width);
+                scrollToIndex((current - 1 + images.length) % images.length);
+              };
+            }
+            if (nextBtn) {
+              nextBtn.onclick = () => {
+                const width = mainImgContainer.clientWidth;
+                const current = Math.round(mainImgContainer.scrollLeft / width);
+                scrollToIndex((current + 1) % images.length);
+              };
+            }
           } else {
             counterEl.style.display = 'none';
+            if (prevBtn) prevBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'none';
           }
         }
       }
@@ -153,17 +185,9 @@ function renderProductDetails() {
       images.forEach((imgUrl, idx) => {
         const thumb = document.createElement('div');
         thumb.className = `gallery__thumbnail ${idx === 0 ? 'active' : ''}`;
-        thumb.innerHTML = `<img src="${imgUrl}" alt="Thumbnail view ${idx + 1}" loading="lazy">`;
-        thumb.addEventListener('click', () => {
-          // Scroll main carousel to the correct image
-          if (mainImgContainer) {
-            const width = mainImgContainer.clientWidth;
-            mainImgContainer.scrollTo({
-              left: width * idx,
-              behavior: 'smooth'
-            });
-          }
-        });
+        const thumbUrl = typeof ImageService !== 'undefined' ? ImageService.getOptimizedUrl(imgUrl, 150) : imgUrl;
+        thumb.innerHTML = `<img src="${thumbUrl}" alt="Thumbnail view ${idx + 1}" loading="lazy">`;
+        thumb.addEventListener('click', () => scrollToIndex(idx));
         thumbnailsContainer.appendChild(thumb);
       });
       thumbnailsContainer.style.display = 'flex';

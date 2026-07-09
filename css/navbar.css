@@ -133,6 +133,19 @@
   fill: currentColor;
 }
 
+/* Theme Toggle */
+.theme-toggle-btn__moon {
+  display: none;
+}
+
+.theme-toggle-btn.is-dark .theme-toggle-btn__sun {
+  display: none;
+}
+
+.theme-toggle-btn.is-dark .theme-toggle-btn__moon {
+  display: block;
+}
+
 /* Cart Badge */
 .cart-badge-container {
   position: relative;
@@ -143,7 +156,7 @@
   top: 2px;
   right: 2px;
   background-color: var(--primary-rose);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
   font-family: var(--font-ui);
   font-size: 0.65rem;
   font-weight: 700;

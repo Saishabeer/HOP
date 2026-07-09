@@ -41,9 +41,11 @@
 
 .search-bar__btn {
   position: absolute;
-  right: 12px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
   color: var(--warm-gray);
   display: flex;
   align-items: center;
@@ -59,7 +61,7 @@
 
 .search-bar__clear {
   position: absolute;
-  right: 40px;
+  right: 46px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--warm-gray);
@@ -135,7 +137,7 @@
 
 .filter-pill.active {
   background-color: var(--primary-rose);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
 }
 
 /* Checkboxes */
@@ -168,12 +170,18 @@
   .mobile-filters-trigger {
     display: flex;
   }
+
+  /* The mobile trigger row above already has its own sort dropdown --
+     without this, both selects render at once ("Sort by: Featured" shown twice). */
+  .desktop-sort-wrapper {
+    display: none;
+  }
 }
 
 .filter-btn-mobile {
   flex-grow: 1;
   background-color: var(--primary-rose);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
   padding: 12px;
   border-radius: var(--radius-button);
   font-family: var(--font-ui);
@@ -360,7 +368,7 @@
 .pagination__btn:hover,
 .pagination__btn.active {
   background-color: var(--primary-rose);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
   border-color: var(--primary-rose);
 }
 

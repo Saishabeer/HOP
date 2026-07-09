@@ -40,7 +40,7 @@
 }
 
 .footer-logo .logo__main {
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
   font-size: 1.5rem;
 }
 
@@ -108,7 +108,7 @@
   height: 36px;
   border-radius: var(--radius-round);
   background-color: rgba(253, 248, 244, 0.1);
-  color: var(--ivory-white);
+  color: var(--text-on-accent);
   transition: all var(--transition-fast);
 }
 
