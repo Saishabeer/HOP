@@ -400,11 +400,7 @@ function getNewArrivals(products, usedIds) {
 function getBestSellingProducts(products, usedIds) {
   let bestSellers = products
     .filter(p => !usedIds.has(p.ProductID) && p.StockQuantity > 0)
-    .sort((a, b) => {
-      const scoreA = (a.OrderCount || 0) + getLocalInterest(a.ProductID);
-      const scoreB = (b.OrderCount || 0) + getLocalInterest(b.ProductID);
-      return scoreB - scoreA;
-    })
+    .sort((a, b) => getPopularityScore(b) - getPopularityScore(a))
     .slice(0, 8);
   bestSellers.forEach(p => usedIds.add(p.ProductID));
   return bestSellers;

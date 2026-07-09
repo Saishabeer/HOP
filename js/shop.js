@@ -337,9 +337,8 @@ function applyFiltersAndRender() {
     if (state.sort === 'best') {
       const bestSellerDiff = (b.BestSeller ? 1 : 0) - (a.BestSeller ? 1 : 0);
       if (bestSellerDiff !== 0) return bestSellerDiff;
-      const scoreA = (a.OrderCount || 0) + getLocalInterest(a.ProductID);
-      const scoreB = (b.OrderCount || 0) + getLocalInterest(b.ProductID);
-      if (scoreB !== scoreA) return scoreB - scoreA;
+      const scoreDiff = getPopularityScore(b) - getPopularityScore(a);
+      if (scoreDiff !== 0) return scoreDiff;
       return b.DisplayOrder - a.DisplayOrder;
     }
     

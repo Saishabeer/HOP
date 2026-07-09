@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
   <title>Admin Panel | House of Prime Collections</title>
   
   <link rel="stylesheet" href="css/tokens.css">
@@ -50,7 +51,7 @@
 <body>
 
   <!-- TOAST NOTIFICATION -->
-  <div id="toast" class="toast">Message goes here</div>
+  <div id="toast" class="toast"></div>
 
   <!-- LOGIN SECTION -->
   <div id="login-section" class="login-container active">
@@ -66,9 +67,7 @@
     </button>
   </div>
 
-  </div>
-
-  <!-- Note: The actual Admin tools (Add Product, Edit, Delete) are now seamlessly integrated 
+  <!-- Note: The actual Admin tools (Add Product, Edit, Delete) are now seamlessly integrated
        into the storefront (index.html, shop.html) via js/admin-controls.js.
        Once logged in here, you are redirected back to the storefront where the tools will appear. -->
 
@@ -87,6 +86,6 @@
   <script src="js/config.js" defer></script>
   <script src="js/lib/data.js" defer></script>
   <script src="js/lib/sheetsWriter.js" defer></script>
-  <script src="js/admin.js" defer></script>
+  <script src="js/admin.js?v=4" defer></script>
 </body>
 </html>

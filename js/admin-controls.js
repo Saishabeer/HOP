@@ -14,43 +14,27 @@
   async function initAdminMode() {
     if (!adminToken) return;
 
-    console.log('[Admin Mode] Verifying admin session...');
+    logger.log('[Admin Mode]', 'Verifying admin session...');
     try {
       const isVerified = await verifyAdminToken(adminToken);
-      
+
       if (!isVerified) {
-        console.warn('[Admin Mode] Invalid session token. Admin mode disabled.');
+        logger.warn('[Admin Mode]', 'Invalid session token. Admin mode disabled.');
         sessionStorage.removeItem('admin_token');
         return;
       }
     } catch (e) {
-      console.error('[Admin Mode] Token verification crashed:', e);
+      logger.error('[Admin Mode]', 'Token verification crashed:', e);
       // Fallback: If verification request itself fails (e.g., network error),
       // we still let them try to use the UI. The backend will ultimately reject bad tokens anyway.
     }
 
-    console.log('[Admin Mode] Session verified. Enabling inline admin features.');
+    logger.log('[Admin Mode]', 'Session verified. Enabling inline admin features.');
     enableAdminUI();
   }
 
-  async function verifyAdminToken(token) {
-    if (token === 'MySuperSecretToken2026') return true; // Local dev bypass
-    if (!CONFIG.APPS_SCRIPT_URL) return true; // Can't verify, let backend handle it
-
-    try {
-      const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
-        method: 'POST',
-        credentials: 'omit',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ token: token, action: 'verify_admin' })
-      });
-      const data = await res.json();
-      return data.success === true;
-    } catch (err) {
-      console.error('[Admin Mode] Verification request failed:', err);
-      return false; // If backend is totally unreachable, they might not be able to do anything anyway
-    }
-  }
+  // verifyAdminToken is provided globally by js/lib/sheetsWriter.js, loaded
+  // before this file on every page — no need to reimplement it here.
 
   function enableAdminUI() {
     // 1. Inject Logout link into navigation menus
@@ -101,6 +85,263 @@
     
     // 4. Inject edit pencil buttons on category cards (Home Page)
     observeCategoryCards();
+
+    // 5. Inject Banner Admin UI (Home Page)
+    injectBannerAdminUI();
+  }
+
+  function injectBannerAdminUI() {
+    const heroSection = document.querySelector('.hero');
+    if (!heroSection) return;
+
+    // Add Banner Button
+    if (!document.getElementById('admin-add-banner-btn')) {
+      const addBannerBtn = document.createElement('button');
+      addBannerBtn.id = 'admin-add-banner-btn';
+      addBannerBtn.className = 'btn btn-primary';
+      addBannerBtn.style.cssText = 'position: absolute; top: 20px; left: 20px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+      addBannerBtn.innerHTML = '+ Add Banner';
+      addBannerBtn.addEventListener('click', async () => {
+        await renderBannerModal(null);
+      });
+      heroSection.appendChild(addBannerBtn);
+    }
+
+    // Monitor for dynamically loaded banner slides
+    const observer = new MutationObserver((mutations) => {
+      let slideAdded = false;
+      for (let mutation of mutations) {
+        if (mutation.addedNodes.length > 0) {
+          for (let node of mutation.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE && (node.classList.contains('hero__slide') || node.querySelector('.hero__slide'))) {
+              slideAdded = true; break;
+            }
+          }
+        }
+        if (slideAdded) break;
+      }
+      if (slideAdded) injectBannerSlideControls();
+    });
+    observer.observe(heroSection, { childList: true, subtree: true });
+    injectBannerSlideControls();
+  }
+
+  async function injectBannerSlideControls() {
+    const slides = document.querySelectorAll('.hero__slide');
+    if (slides.length === 0) return;
+
+    const banners = await fetchBanners().catch(() => []);
+
+    slides.forEach(slide => {
+      if (slide.querySelector('.admin-banner-actions')) return;
+      const bannerId = slide.getAttribute('data-banner-id');
+      if (!bannerId) return;
+
+      const bannerData = banners.find(b => b.BannerID === bannerId);
+      if (!bannerData) return;
+
+      const actionContainer = document.createElement('div');
+      actionContainer.className = 'admin-banner-actions';
+      actionContainer.style.cssText = 'position: absolute; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100;';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'product-card__edit-btn';
+      editBtn.style.cssText = 'position: relative; top: 0; right: 0; background: white;';
+      editBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
+      
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'product-card__edit-btn';
+      deleteBtn.style.cssText = 'position: relative; top: 0; right: 0; background: #FFF0F5; color: var(--primary-rose);';
+      deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+
+      editBtn.addEventListener('click', async (e) => {
+        e.preventDefault(); e.stopPropagation();
+        await renderBannerModal(bannerData);
+      });
+
+      deleteBtn.addEventListener('click', async (e) => {
+        e.preventDefault(); e.stopPropagation();
+        if (confirm('Are you sure you want to delete this banner?')) {
+          deleteBtn.disabled = true;
+          showToast('Deleting banner...', false);
+          try {
+            await deleteBannerOnSheets(adminToken, bannerId);
+            showToast('Banner deleted successfully');
+            setTimeout(() => window.location.reload(), 1000);
+          } catch (err) {
+            showToast('Failed to delete banner', true);
+            deleteBtn.disabled = false;
+          }
+        }
+      });
+
+      actionContainer.appendChild(editBtn);
+      actionContainer.appendChild(deleteBtn);
+      slide.appendChild(actionContainer);
+    });
+  }
+
+  async function renderBannerModal(banner) {
+    const existing = document.getElementById('admin-edit-modal');
+    if (existing) existing.remove();
+
+    const isEdit = !!banner;
+    
+    // Fetch unique categories for the dropdown
+    let uniqueCategories = [];
+    try {
+      const allProducts = await fetchProducts();
+      const catSet = new Set();
+      allProducts.forEach(p => { if (p.Category) catSet.add(p.Category); });
+      uniqueCategories = Array.from(catSet).sort();
+    } catch (e) {
+      console.warn("[Admin Mode] Could not fetch categories for banner dropdown", e);
+    }
+    
+    // Build Button Link Options
+    const currentLink = isEdit ? (banner.ButtonLink || '') : 'shop.html';
+    let linkOptionsHtml = `
+      <option value="shop.html" ${currentLink === 'shop.html' ? 'selected' : ''}>Shop All</option>
+      <option value="index.html#new-arrivals-row" ${currentLink === 'index.html#new-arrivals-row' ? 'selected' : ''}>New Arrivals</option>
+      <option value="index.html#featured-row" ${currentLink === 'index.html#featured-row' ? 'selected' : ''}>Featured Products</option>
+      <option value="index.html#best-sellers-row" ${currentLink === 'index.html#best-sellers-row' ? 'selected' : ''}>Best Sellers</option>
+    `;
+    
+    if (uniqueCategories.length > 0) {
+      linkOptionsHtml += '<optgroup label="Categories">';
+      uniqueCategories.forEach(cat => {
+        const link = `shop.html?category=${encodeURIComponent(cat)}`;
+        linkOptionsHtml += `<option value="${link}" ${currentLink === link ? 'selected' : ''}>${cat.replace(/"/g, '&quot;').replace(/</g, '&lt;')}</option>`;
+      });
+      linkOptionsHtml += '</optgroup>';
+    }
+
+    // Allow custom link if it doesn't match predefined
+    if (isEdit && currentLink && !linkOptionsHtml.includes(`value="${currentLink}"`)) {
+      linkOptionsHtml += `<option value="${currentLink}" selected>Custom Link: ${currentLink}</option>`;
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'admin-modal';
+    modal.id = 'admin-edit-modal';
+    
+    modal.innerHTML = `
+      <div class="admin-modal__content">
+        <span class="admin-modal__close" id="admin-modal-close">&times;</span>
+        <h3 class="admin-modal__title">${isEdit ? 'Edit Banner' : 'Add New Banner'}</h3>
+        <form id="admin-banner-form">
+          <div class="admin-form-group">
+            <label>Banner Image ${isEdit ? '' : '*'}</label>
+            <div class="admin-modal__img-row">
+              <img src="${isEdit && banner.ImageURL ? banner.ImageURL : 'https://placehold.co/800x400'}" class="admin-modal__img-preview" id="admin-banner-img-preview" alt="Preview" style="max-height: 120px; object-fit: cover;">
+              <input type="file" id="admin-banner-img-file" class="admin-form-input" accept="image/jpeg, image/png, image/webp" ${isEdit ? '' : 'required'}>
+            </div>
+            <small style="color: var(--warm-gray);">Recommended aspect ratio: 16:9 or similar wide format.</small>
+          </div>
+
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label for="admin-banner-title">Title</label>
+              <input type="text" id="admin-banner-title" class="admin-form-input" value="${isEdit ? (banner.Title || '') : ''}" placeholder="e.g. Elegant Korean Earrings">
+            </div>
+            <div class="admin-form-group">
+              <label for="admin-banner-subtitle">Subtitle</label>
+              <input type="text" id="admin-banner-subtitle" class="admin-form-input" value="${isEdit ? (banner.Subtitle || '') : ''}" placeholder="e.g. Special Collection">
+            </div>
+          </div>
+          
+          <div class="admin-form-group">
+            <label for="admin-banner-desc">Description</label>
+            <textarea id="admin-banner-desc" class="admin-form-textarea" rows="2" maxlength="300">${isEdit ? (banner.Description || '') : ''}</textarea>
+          </div>
+          
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label for="admin-banner-btn-text">Button Text</label>
+              <input type="text" id="admin-banner-btn-text" class="admin-form-input" value="${isEdit ? (banner.ButtonText || '') : 'Shop Now'}">
+            </div>
+            <div class="admin-form-group">
+              <label for="admin-banner-btn-link">Button Link</label>
+              <select id="admin-banner-btn-link" class="admin-form-select">
+                ${linkOptionsHtml}
+              </select>
+            </div>
+          </div>
+          
+          <div class="admin-form-group">
+            <label for="admin-banner-order">Display Order</label>
+            <input type="number" id="admin-banner-order" class="admin-form-input" value="${isEdit ? banner.DisplayOrder : 1}">
+          </div>
+
+          <div class="admin-modal__buttons">
+            <button type="submit" class="btn btn-admin-save" id="admin-banner-save-btn">
+              <span id="admin-banner-save-text">${isEdit ? 'Save Changes' : 'Add Banner'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('admin-modal-close').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    const fileInput = document.getElementById('admin-banner-img-file');
+    const imgPreview = document.getElementById('admin-banner-img-preview');
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => imgPreview.src = event.target.result;
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('admin-banner-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('admin-banner-save-btn');
+      const saveText = document.getElementById('admin-banner-save-text');
+      
+      saveBtn.disabled = true;
+      saveText.textContent = 'Saving...';
+
+      try {
+        let finalImageUrl = isEdit ? banner.ImageURL : '';
+        if (fileInput.files && fileInput.files[0]) {
+          showToast('Uploading banner image...', false);
+          finalImageUrl = await uploadImageToCloudinary(fileInput.files[0]);
+        }
+
+        const payload = {
+          ImageURL: finalImageUrl,
+          Title: document.getElementById('admin-banner-title').value.trim(),
+          Subtitle: document.getElementById('admin-banner-subtitle').value.trim(),
+          Description: document.getElementById('admin-banner-desc').value.trim(),
+          ButtonText: document.getElementById('admin-banner-btn-text').value.trim(),
+          ButtonLink: document.getElementById('admin-banner-btn-link').value.trim(),
+          DisplayOrder: Number(document.getElementById('admin-banner-order').value) || 99
+        };
+
+        if (isEdit) {
+          payload.BannerID = banner.BannerID;
+          showToast('Updating banner...', false);
+          await editBannerOnSheets(adminToken, payload);
+          showToast('Banner updated successfully!');
+        } else {
+          showToast('Adding new banner...', false);
+          await addBannerOnSheets(adminToken, payload);
+          showToast('Banner added successfully!');
+        }
+        
+        setTimeout(() => window.location.reload(), 1000);
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to save banner', true);
+        saveBtn.disabled = false;
+        saveText.textContent = isEdit ? 'Save Changes' : 'Add Banner';
+      }
+    });
   }
 
   function observeProductCards() {
@@ -232,6 +473,9 @@
 
       const editBtn = document.createElement('button');
       editBtn.className = 'cat-card__edit-btn product-card__edit-btn'; // reuse product card styling
+      editBtn.style.position = 'relative';
+      editBtn.style.top = '0';
+      editBtn.style.right = '0';
       editBtn.setAttribute('aria-label', 'Edit Category');
       editBtn.innerHTML = `
         <svg viewBox="0 0 24 24">
@@ -241,6 +485,9 @@
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'cat-card__edit-btn product-card__edit-btn'; // reuse styling
+      deleteBtn.style.position = 'relative';
+      deleteBtn.style.top = '0';
+      deleteBtn.style.right = '0';
       deleteBtn.style.backgroundColor = '#FFF0F5'; // Danger tint
       deleteBtn.style.color = 'var(--primary-rose)';
       deleteBtn.setAttribute('aria-label', 'Delete Category');
@@ -451,10 +698,10 @@
       saveBtn.innerHTML = 'Moving products... ██████████░░░░░';
 
       try {
-        showToast(\`Deleting category...\`);
+        showToast(`Deleting category...`);
         const res = await bulkDeleteCategoryOnSheets(adminToken, oldCategoryName, destCategoryName);
         if (res.success) {
-          showToast(\`Successfully migrated products.\`);
+          showToast(`Successfully migrated products.`);
           setTimeout(() => window.location.reload(), 1000);
         } else {
           throw new Error(res.error || 'Failed to delete');

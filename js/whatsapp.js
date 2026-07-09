@@ -72,3 +72,14 @@ const WhatsApp = {
     return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
   }
 };
+
+// Auto-wire the floating WhatsApp button (and homepage CTA, if present) on every
+// page that includes this script — previously duplicated per-page and missing
+// on several pages, leaving the floating button as a dead "#" link there.
+document.addEventListener('DOMContentLoaded', () => {
+  const url = WhatsApp.getGeneralChatUrl();
+  const waFloat = document.querySelector('.whatsapp-float');
+  const waCta = document.getElementById('wa-cta-btn');
+  if (waFloat) waFloat.href = url;
+  if (waCta) waCta.href = url;
+});

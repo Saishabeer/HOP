@@ -18,6 +18,14 @@ const CONFIG = {
   FREE_SHIPPING_THRESHOLD: 500,
   CURRENCY: 'Rs.',
 
+  // --- SITE-WIDE CONTACT & SOCIAL INFO ---
+  // Single source of truth for footer/contact/policy pages (see js/site-info.js).
+  // Edit these here instead of hunting through every HTML page.
+  CONTACT_EMAIL: 'hoprimecol@gmail.com',
+  CONTACT_PHONE_PRIMARY: '+91 95144 87662',   // WhatsApp-enabled, same as WHATSAPP_NUMBER above
+  CONTACT_PHONE_SECONDARY: '+91 75488 81745', // Call only
+  INSTAGRAM_URL: 'https://www.instagram.com/houseofprime.jewels?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
+
   // API settings
   CACHE_EXPIRY_MS: 5 * 60 * 1000, // 5 minutes cache
 

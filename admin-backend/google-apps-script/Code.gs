@@ -14,10 +14,17 @@ function doPost(e) {
       return handleIncrementOrders(data.productIds);
     }
 
+    // 1b. Handle Public Click Tracking - No auth token required, drives "most clicked" popularity
+    if (data.action === 'increment_clicks') {
+      return handleIncrementClicks(data.clicks);
+    }
+
     // 2. Authenticate Request for Admin actions
-    var AUTH_TOKEN = PropertiesService.getScriptProperties().getProperty('AUTH_TOKEN') || 'MySuperSecretToken2026';
-    
-    if (data.token !== AUTH_TOKEN) {
+    // No hardcoded fallback: if the AUTH_TOKEN Script Property isn't set, every
+    // admin request is rejected rather than silently trusting a public default.
+    var AUTH_TOKEN = PropertiesService.getScriptProperties().getProperty('AUTH_TOKEN');
+
+    if (!AUTH_TOKEN || data.token !== AUTH_TOKEN) {
       return buildResponse(401, { error: 'Unauthorized' });
     }
 
@@ -40,6 +47,17 @@ function doPost(e) {
 
     if (data.action === 'delete_category') {
       return handleDeleteCategory(data.oldCategory, data.destinationCategory);
+    }
+
+    // --- Banner Actions ---
+    if (data.action === 'add_banner') {
+      return handleAddBanner(data.banner);
+    }
+    if (data.action === 'edit_banner') {
+      return handleEditBanner(data.banner);
+    }
+    if (data.action === 'delete_banner') {
+      return handleDeleteBanner(data.bannerId);
     }
 
     // Default action: Add Product
@@ -135,7 +153,8 @@ function handleAddProduct(product) {
       'Active',                               // S: Status
       product.DisplayOrder ? Number(product.DisplayOrder) : 99, // T: DisplayOrder
       new Date().toISOString().split('T')[0], // U: CreatedDate
-      0                                       // V: OrderCount (starts at 0)
+      0,                                      // V: OrderCount (starts at 0)
+      0                                       // W: ClickCount (starts at 0)
     ];
 
     sheet.appendRow(newRow);
@@ -409,10 +428,187 @@ function handleIncrementOrders(productIds) {
   }
 }
 
+/**
+ * Increment click counts for viewed/interacted-with products.
+ * `clicks` is a map of { ProductID: pointsToAdd }, batched client-side so a
+ * single flush covers many clicks instead of one request per click.
+ */
+function handleIncrementClicks(clicks) {
+  try {
+    if (!clicks || typeof clicks !== 'object') {
+      return buildResponse(400, { error: 'Invalid clicks payload' });
+    }
+
+    var productIds = Object.keys(clicks);
+    if (productIds.length === 0) {
+      return buildResponse(200, { success: true, message: 'No clicks to record' });
+    }
+
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) {
+      return buildResponse(200, { success: true, message: 'No products in database to increment' });
+    }
+
+    var productIdsRange = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+
+    for (var i = 0; i < productIds.length; i++) {
+      var targetId = productIds[i];
+      var points = parseInt(clicks[targetId], 10) || 0;
+      if (points <= 0) continue;
+
+      for (var rowIdx = 0; rowIdx < productIdsRange.length; rowIdx++) {
+        if (productIdsRange[rowIdx][0] === targetId) {
+          var actualRow = rowIdx + 2;
+          var clickCountCell = sheet.getRange(actualRow, 23); // W: ClickCount
+          var currentVal = clickCountCell.getValue();
+          var currentCount = parseInt(currentVal, 10) || 0;
+          clickCountCell.setValue(currentCount + points);
+          break;
+        }
+      }
+    }
+
+    return buildResponse(200, { success: true, message: 'Click counts incremented successfully' });
+  } catch (error) {
+    return buildResponse(500, { error: error.toString() });
+  }
+}
+
 function buildResponse(statusCode, data) {
   var output = ContentService.createTextOutput(JSON.stringify(data));
   output.setMimeType(ContentService.MimeType.JSON);
   return output;
+}
+
+// ==========================================
+// BANNER MANAGEMENT
+// ==========================================
+
+function getOrCreateBannersSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Banners");
+  if (!sheet) {
+    sheet = ss.insertSheet("Banners");
+    sheet.appendRow(['BannerID', 'ImageURL', 'Subtitle', 'Title', 'Description', 'ButtonText', 'ButtonLink', 'DisplayOrder', 'Status']);
+    
+    // Auto-populate with one default banner so frontend doesn't break if empty
+    sheet.appendRow([
+      'B_00001',
+      'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=1440&auto=format&fit=crop&q=80',
+      'Exquisite Korean Designs',
+      'Sophistication in Every Detail',
+      'Discover our premium range of Korean earrings & fashion accessories. Hand-selected quality, priced affordably between Rs.70 - Rs.100.',
+      'Shop Collections',
+      'shop.html',
+      1,
+      'Active'
+    ]);
+  }
+  return sheet;
+}
+
+function handleAddBanner(banner) {
+  try {
+    if (!banner || !banner.ImageURL) return buildResponse(400, { error: 'Missing image URL' });
+
+    var sheet = getOrCreateBannersSheet();
+    var lastRow = sheet.getLastRow();
+    var newIdNumber = 1;
+    
+    if (lastRow > 1) {
+      var lastIdStr = sheet.getRange(lastRow, 1).getValue();
+      if (lastIdStr && lastIdStr.toString().startsWith('B_')) {
+        var match = lastIdStr.toString().match(/B_(\d+)/);
+        if (match) newIdNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+    var BannerID = 'B_' + ('00000' + newIdNumber).slice(-5);
+
+    var newRow = [
+      BannerID,
+      banner.ImageURL || '',
+      banner.Subtitle || '',
+      banner.Title || '',
+      banner.Description || '',
+      banner.ButtonText || '',
+      banner.ButtonLink || '',
+      banner.DisplayOrder ? Number(banner.DisplayOrder) : 99,
+      'Active'
+    ];
+
+    sheet.appendRow(newRow);
+    return buildResponse(200, { success: true, message: 'Banner added successfully', bannerId: BannerID });
+  } catch (error) {
+    return buildResponse(500, { error: error.toString() });
+  }
+}
+
+function handleEditBanner(banner) {
+  try {
+    if (!banner || !banner.BannerID) return buildResponse(400, { error: 'Missing Banner ID' });
+
+    var sheet = getOrCreateBannersSheet();
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) return buildResponse(404, { error: 'No banners in database' });
+
+    var bannerIdsRange = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+    var foundRow = -1;
+
+    for (var i = 0; i < bannerIdsRange.length; i++) {
+      if (bannerIdsRange[i][0] === banner.BannerID) {
+        foundRow = i + 2;
+        break;
+      }
+    }
+
+    if (foundRow === -1) return buildResponse(404, { error: 'Banner not found' });
+
+    sheet.getRange(foundRow, 2).setValue(banner.ImageURL || '');
+    sheet.getRange(foundRow, 3).setValue(banner.Subtitle || '');
+    sheet.getRange(foundRow, 4).setValue(banner.Title || '');
+    sheet.getRange(foundRow, 5).setValue(banner.Description || '');
+    sheet.getRange(foundRow, 6).setValue(banner.ButtonText || '');
+    sheet.getRange(foundRow, 7).setValue(banner.ButtonLink || '');
+    
+    if (banner.DisplayOrder !== undefined) {
+      sheet.getRange(foundRow, 8).setValue(banner.DisplayOrder === '' ? 99 : Number(banner.DisplayOrder));
+    }
+    if (banner.Status !== undefined) {
+      sheet.getRange(foundRow, 9).setValue(banner.Status);
+    }
+
+    return buildResponse(200, { success: true, message: 'Banner updated successfully' });
+  } catch (error) {
+    return buildResponse(500, { error: error.toString() });
+  }
+}
+
+function handleDeleteBanner(bannerId) {
+  try {
+    if (!bannerId) return buildResponse(400, { error: 'Missing Banner ID' });
+
+    var sheet = getOrCreateBannersSheet();
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) return buildResponse(404, { error: 'No banners in database' });
+
+    var bannerIdsRange = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+    var foundRow = -1;
+
+    for (var i = 0; i < bannerIdsRange.length; i++) {
+      if (bannerIdsRange[i][0] === bannerId) {
+        foundRow = i + 2;
+        break;
+      }
+    }
+
+    if (foundRow === -1) return buildResponse(404, { error: 'Banner not found' });
+
+    sheet.getRange(foundRow, 9).setValue('Inactive'); // Soft delete
+    return buildResponse(200, { success: true, message: 'Banner marked as Inactive' });
+  } catch (error) {
+    return buildResponse(500, { error: error.toString() });
+  }
 }
 
 

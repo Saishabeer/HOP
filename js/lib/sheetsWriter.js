@@ -11,8 +11,8 @@ async function sendOrderIncrementToSheets(productIds) {
       productIds: productIds
     };
     
-    console.log('[API] Sending order increment request to Google Sheet:', payload);
-    
+    logger.log('[API]', 'Sending order increment request to Google Sheet:', payload);
+
     // We send a non-authenticated request (credentials omit, text/plain) to avoid CORS issues
     await fetch(CONFIG.APPS_SCRIPT_URL, {
       method: 'POST',
@@ -20,13 +20,54 @@ async function sendOrderIncrementToSheets(productIds) {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
-    
+
     // Clear product cache to make sure the next page load pulls the fresh order counts
     localStorage.removeItem('products_v2');
-    
-    console.log('[API] Order increment sent successfully.');
+
+    logger.log('[API]', 'Order increment sent successfully.');
   } catch (error) {
-    console.error('[API] Failed to increment order counts on Google Sheets:', error);
+    logger.error('[API]', 'Failed to increment order counts on Google Sheets:', error);
+  }
+}
+
+/**
+ * Send a batch of click/interest counts to Google Sheets as ClickCount.
+ * `clicks` is a map of { ProductID: pointsToAdd }, built up client-side by
+ * queueClickForServer() in data.js and flushed periodically.
+ */
+async function sendClickIncrementToSheets(clicks) {
+  if (!clicks || Object.keys(clicks).length === 0) return;
+  if (!CONFIG.APPS_SCRIPT_URL) return;
+
+  const payload = JSON.stringify({
+    action: 'increment_clicks',
+    clicks: clicks
+  });
+
+  try {
+    // Prefer sendBeacon: it's designed to survive page unload, unlike fetch,
+    // which browsers may cancel mid-flight when the tab closes/navigates away.
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'text/plain;charset=utf-8' });
+      const sent = navigator.sendBeacon(CONFIG.APPS_SCRIPT_URL, blob);
+      if (sent) {
+        localStorage.removeItem('products_v2');
+        return;
+      }
+    }
+
+    // Non-authenticated request (credentials omit, text/plain) to avoid CORS issues
+    await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      credentials: 'omit',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: payload
+    });
+
+    // Clear product cache so the next page load pulls the fresh click counts
+    localStorage.removeItem('products_v2');
+  } catch (error) {
+    console.error('[API] Failed to send click counts to Google Sheets:', error);
   }
 }
 
@@ -36,11 +77,7 @@ async function sendOrderIncrementToSheets(productIds) {
 async function verifyAdminToken(token) {
   if (!token) return false;
 
-  // Local fallback: if running locally and token is the default dev token, return true immediately
-  if (token === 'MySuperSecretToken2026') {
-    console.log('[API] Local admin verification mock: success');
-    return true;
-  }
+  // Removed local fallback bypass for security reasons
 
   if (!CONFIG.APPS_SCRIPT_URL) return false;
 
@@ -59,9 +96,9 @@ async function verifyAdminToken(token) {
     const data = await res.json();
     return !!data.success;
   } catch (e) {
-    console.warn('[API] Token verification request failed, falling back to local check:', e);
-    // Fallback if network or CORS fails
-    return token === 'MySuperSecretToken2026';
+    // Fail closed: a network/CORS failure must not authenticate the admin session.
+    console.warn('[API] Token verification request failed:', e);
+    return false;
   }
 }
 
@@ -87,12 +124,7 @@ async function addProductOnSheets(token, productData) {
     return newProduct;
   };
 
-  // Local fallback mock
-  if (token === 'MySuperSecretToken2026') {
-    console.log('[API] Mocking product add locally:', productData);
-    const mockProd = saveLocalAdd(productData);
-    return { success: true, message: 'Mock add successful', product: mockProd };
-  }
+  // Removed local fallback bypass for security reasons
 
   if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
 
@@ -143,12 +175,7 @@ async function editProductOnSheets(token, productData) {
     localStorage.removeItem('products_v2');
   };
 
-  // Local fallback mock
-  if (token === 'MySuperSecretToken2026') {
-    console.log('[API] Mocking product edit locally:', productData);
-    saveLocalEdit(productData);
-    return { success: true, message: 'Mock update successful' };
-  }
+  // Removed local fallback bypass for security reasons
 
   if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
 
@@ -198,12 +225,7 @@ async function deleteProductOnSheets(token, productId) {
     localStorage.removeItem('products_v2');
   };
 
-  // Local fallback mock
-  if (token === 'MySuperSecretToken2026') {
-    console.log('[API] Mocking product delete locally:', productId);
-    saveLocalDelete(productId);
-    return { success: true, message: 'Mock delete successful' };
-  }
+  // Removed local fallback bypass for security reasons
 
   if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
 
@@ -234,98 +256,47 @@ async function deleteProductOnSheets(token, productId) {
 
 
 /**
- * Bulk rename a category via Google Sheets
+ * Bulk rename a category by updating products individually
  */
 async function bulkRenameCategoryOnSheets(token, oldCategory, newCategory) {
   if (!token) throw new Error('Unauthorized: Session token missing.');
   if (!oldCategory || !newCategory) throw new Error('Missing category name.');
 
-  if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
+  // Fetch all products with full schema
+  const allProducts = await fetchProducts();
 
-  try {
-    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
-      method: 'POST',
-      credentials: 'omit',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        token: token,
-        action: 'rename_category',
-        oldCategory: oldCategory,
-        newCategory: newCategory
-      })
-    });
+  const affectedProducts = allProducts.filter(p => p.Category && p.Category.trim().toLowerCase() === oldCategory.toLowerCase());
 
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to rename category.');
-    }
-    
-    // Optimistic UI cache update
-    const localRenames = JSON.parse(localStorage.getItem('hop_admin_renames') || '{}');
-    localRenames[oldCategory] = newCategory;
-    
-    // Also update any previous renames that pointed to the old category
-    Object.keys(localRenames).forEach(key => {
-      if (localRenames[key] === oldCategory) {
-        localRenames[key] = newCategory;
-      }
-    });
-    
-    localStorage.setItem('hop_admin_renames', JSON.stringify(localRenames));
-    
-    localStorage.removeItem('products_v2');
-    return data;
-  } catch (e) {
-    console.warn('[API] Rename category request failed:', e);
-    throw e;
+  if (affectedProducts.length === 0) {
+    throw new Error('Category not found or has no products.');
   }
+
+  // Sequentially edit each product to avoid rate limiting
+  for (let i = 0; i < affectedProducts.length; i++) {
+    const product = affectedProducts[i];
+    product.Category = newCategory; // Update category inline
+    
+    // Pass full product object to satisfy backend validation
+    await editProductOnSheets(token, product);
+  }
+
+  // Optimistic UI cache update
+  const localRenames = JSON.parse(localStorage.getItem('hop_admin_renames') || '{}');
+  localRenames[oldCategory] = newCategory;
+  Object.keys(localRenames).forEach(key => {
+    if (localRenames[key] === oldCategory) localRenames[key] = newCategory;
+  });
+  localStorage.setItem('hop_admin_renames', JSON.stringify(localRenames));
+  localStorage.removeItem('products_v2');
+  
+  return { success: true };
 }
 
 /**
- * Delete a category by migrating its products to a destination category
+ * Delete a category by migrating its products individually
  */
 async function bulkDeleteCategoryOnSheets(token, oldCategory, destinationCategory) {
-  if (!token) throw new Error('Unauthorized: Session token missing.');
-  if (!oldCategory || !destinationCategory) throw new Error('Missing category name or destination.');
-
-  if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
-
-  try {
-    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'delete_category',
-        token: token,
-        oldCategory: oldCategory,
-        destinationCategory: destinationCategory
-      })
-    });
-
-    const data = await res.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to delete category.');
-    }
-    
-    // Optimistic UI cache update (same mechanism as rename)
-    const localRenames = JSON.parse(localStorage.getItem('hop_admin_renames') || '{}');
-    localRenames[oldCategory] = destinationCategory;
-    
-    // Update any previous renames that pointed to the old category
-    Object.keys(localRenames).forEach(key => {
-      if (localRenames[key] === oldCategory) {
-        localRenames[key] = destinationCategory;
-      }
-    });
-    
-    localStorage.setItem('hop_admin_renames', JSON.stringify(localRenames));
-    
-    localStorage.removeItem('products_v2');
-    return data;
-  } catch (e) {
-    console.warn('[API] Delete category request failed:', e);
-    throw e;
-  }
+  return bulkRenameCategoryOnSheets(token, oldCategory, destinationCategory);
 }
 
 /**
@@ -341,7 +312,7 @@ async function uploadImageToCloudinary(file) {
   formData.append('file', file);
   formData.append('upload_preset', CONFIG.CLOUDINARY_UPLOAD_PRESET);
 
-  console.log(`[Cloudinary] Uploading image: ${file.name}`);
+  logger.log('[Cloudinary]', `Uploading image: ${file.name}`);
   const res = await fetch(cloudinaryUrl, {
     method: 'POST',
     body: formData
@@ -357,7 +328,82 @@ async function uploadImageToCloudinary(file) {
     throw new Error('Cloudinary response did not contain secure_url.');
   }
   
-  console.log(`[Cloudinary] Upload successful: ${data.secure_url}`);
+  logger.log('[Cloudinary]', `Upload successful: ${data.secure_url}`);
   return data.secure_url;
+}
+
+/**
+ * Add a new banner via Google Sheets
+ */
+async function addBannerOnSheets(token, bannerData) {
+  if (!token) throw new Error('Unauthorized: Session token missing.');
+  if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
+
+  try {
+    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      credentials: 'omit',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token: token, action: 'add_banner', banner: bannerData })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to add banner.');
+    
+    localStorage.removeItem('hop_banners_v1');
+    return data;
+  } catch (e) {
+    console.warn('[API] Add banner failed:', e);
+    throw e;
+  }
+}
+
+/**
+ * Edit an existing banner via Google Sheets
+ */
+async function editBannerOnSheets(token, bannerData) {
+  if (!token) throw new Error('Unauthorized: Session token missing.');
+  if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
+
+  try {
+    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      credentials: 'omit',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token: token, action: 'edit_banner', banner: bannerData })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to edit banner.');
+    
+    localStorage.removeItem('hop_banners_v1');
+    return data;
+  } catch (e) {
+    console.warn('[API] Edit banner failed:', e);
+    throw e;
+  }
+}
+
+/**
+ * Soft delete an existing banner via Google Sheets
+ */
+async function deleteBannerOnSheets(token, bannerId) {
+  if (!token) throw new Error('Unauthorized: Session token missing.');
+  if (!CONFIG.APPS_SCRIPT_URL) throw new Error('System configuration error.');
+
+  try {
+    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      credentials: 'omit',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token: token, action: 'delete_banner', bannerId: bannerId })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to delete banner.');
+    
+    localStorage.removeItem('hop_banners_v1');
+    return data;
+  } catch (e) {
+    console.warn('[API] Delete banner failed:', e);
+    throw e;
+  }
 }
 

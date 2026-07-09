@@ -84,7 +84,18 @@ async function login() {
       body: JSON.stringify({ password })
     });
 
-    const data = await response.json();
+    if (response.status === 404) {
+      showToast('Error 404: Please restart your terminal command (node dev-server.js) to apply the latest fixes!', 'error');
+      return;
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch(e) {
+      showToast('Server returned invalid data. Please restart the dev server.', 'error');
+      return;
+    }
 
     if (response.ok && data.success) {
       sessionStorage.setItem('admin_token', data.token);
@@ -97,7 +108,7 @@ async function login() {
     }
   } catch (error) {
     console.error('[Admin] Login request failed:', error);
-    showToast('Connection error. Check that the Netlify function is running.', 'error');
+    showToast('Connection error. Check that the dev server is running.', 'error');
   } finally {
     if (loginBtn) {
       loginBtn.disabled = false;

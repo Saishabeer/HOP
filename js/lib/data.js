@@ -8,7 +8,8 @@ const PRODUCT_CACHE_KEY = 'products_v2';
 function parseSheetData(gvizJson) {
   const table = gvizJson.table;
   const cols = table.cols.map(col => col.label ? col.label.trim() : '');
-  
+  const localRenames = JSON.parse(localStorage.getItem('hop_admin_renames') || '{}');
+
   return table.rows.map(row => {
     const item = {};
     row.c.forEach((cell, index) => {
@@ -38,12 +39,18 @@ function parseSheetData(gvizJson) {
       item[header] = val;
     });
     
+    // Apply optimistic category renames
+    let category = item.Category || 'Korean Earrings';
+    if (localRenames[category]) {
+      category = localRenames[category];
+    }
+
     // Ensure data types and structures are consistent
     return {
       ProductID: item.ProductID || '',
       ModelNumber: item.ModelNumber || '',
       ProductName: item.ProductName || '',
-      Category: item.Category || 'Korean Earrings',
+      Category: category,
       Description: item.Description || '',
       Price: Number(item.Price) || 0,
       DiscountPrice: item.DiscountPrice !== null && item.DiscountPrice !== undefined && item.DiscountPrice !== '' ? Number(item.DiscountPrice) : null,
@@ -61,15 +68,9 @@ function parseSheetData(gvizJson) {
       Status: item.Status || 'Active',
       DisplayOrder: Number(item.DisplayOrder) || 99,
       CreatedDate: item.CreatedDate || '',
-      OrderCount: Number(item.OrderCount) || 0
+      OrderCount: Number(item.OrderCount) || 0,
+      ClickCount: Number(item.ClickCount) || 0
     };
-
-    // Apply optimistic category renames
-    const localRenames = JSON.parse(localStorage.getItem('hop_admin_renames') || '{}');
-    if (localRenames[item.Category]) {
-      item.Category = localRenames[item.Category];
-    }
-
   }).filter(item => item.ProductID && item.Status === 'Active');
 }
 
@@ -107,6 +108,7 @@ function fetchSheetJsonp(sheetSource) {
       t: Date.now()
     });
     if (sheetSource.gid) params.set('gid', sheetSource.gid);
+    if (sheetSource.sheetName) params.set('sheet', sheetSource.sheetName);
 
     window[callbackName] = (json) => {
       cleanup();
@@ -166,7 +168,7 @@ async function fetchProducts() {
         }
 
         const parsedProducts = parseSheetData(json);
-        console.log('[API] Parsed products from sheet:', parsedProducts);
+        logger.log('[API]', 'Parsed products from sheet:', parsedProducts);
         // Sort by DisplayOrder
         parsedProducts.sort((a, b) => a.DisplayOrder - b.DisplayOrder);
         
@@ -235,7 +237,99 @@ async function fetchProductById(id) {
 }
 
 /**
+ * Fetch banners from Google Sheets "Banners" tab
+ */
+async function fetchBanners() {
+  const CACHE_KEY = 'hop_banners_v1';
+  let rawData = [];
+
+  const cached = localStorage.getItem(CACHE_KEY);
+  if (cached) {
+    try {
+      const cachedPayload = JSON.parse(cached);
+      if (cachedPayload.timestamp && Date.now() - cachedPayload.timestamp < CONFIG.CACHE_EXPIRY_MS && Array.isArray(cachedPayload.data)) {
+        rawData = cachedPayload.data;
+      }
+    } catch (e) {}
+  }
+
+  if (rawData.length === 0) {
+    const sheetSource = getSheetSource(CONFIG.SHEET_ID);
+    if (sheetSource && sheetSource.id) {
+      sheetSource.sheetName = "Banners";
+      try {
+        const json = await fetchSheetJsonp(sheetSource);
+        if (json.status !== 'error') {
+          const table = json.table;
+          const cols = table.cols.map(col => col.label ? col.label.trim() : '');
+          
+          let parsedBanners = table.rows.map(row => {
+            const item = {};
+            row.c.forEach((cell, index) => {
+              const header = cols[index];
+              if (header) item[header] = cell ? cell.v : null;
+            });
+            return {
+              BannerID: item.BannerID || '',
+              ImageURL: item.ImageURL || '',
+              Subtitle: item.Subtitle || '',
+              Title: item.Title || '',
+              Description: item.Description || '',
+              ButtonText: item.ButtonText || '',
+              ButtonLink: item.ButtonLink || '',
+              DisplayOrder: Number(item.DisplayOrder) || 99,
+              Status: item.Status || 'Active'
+            };
+          }).filter(b => b.BannerID && b.Status !== 'Inactive');
+
+          parsedBanners.sort((a, b) => a.DisplayOrder - b.DisplayOrder);
+          
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: parsedBanners }));
+          rawData = parsedBanners;
+        }
+      } catch (e) {
+        console.warn("Failed to fetch banners from sheet", e);
+      }
+    }
+  }
+
+  // Fallback default banner if network fails or sheet is empty
+  if (rawData.length === 0) {
+    rawData = [{
+      BannerID: 'B_00001',
+      ImageURL: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=1440&auto=format&fit=crop&q=80',
+      Subtitle: 'Exquisite Korean Designs',
+      Title: 'Sophistication in Every Detail',
+      Description: 'Discover our premium range of Korean earrings & fashion accessories.',
+      ButtonText: 'Shop Collections',
+      ButtonLink: 'shop.html'
+    }];
+  }
+
+  // Merge local optimistic updates for admin
+  const localAdds = JSON.parse(localStorage.getItem('hop_admin_banner_adds') || '[]');
+  const localEdits = JSON.parse(localStorage.getItem('hop_admin_banner_edits') || '{}');
+  const localDeletes = JSON.parse(localStorage.getItem('hop_admin_banner_deletes') || '[]');
+
+  let combined = [...rawData];
+  localAdds.forEach(b => { if (!combined.some(item => item.BannerID === b.BannerID)) combined.push(b); });
+  
+  combined = combined.map(b => localEdits[b.BannerID] ? { ...b, ...localEdits[b.BannerID] } : b);
+  combined = combined.filter(b => !localDeletes.includes(b.BannerID) && b.Status !== 'Inactive');
+  combined.sort((a, b) => a.DisplayOrder - b.DisplayOrder);
+
+  return combined;
+}
+
+// Make globals available
+window.fetchProducts = fetchProducts;
+window.fetchBanners = fetchBanners;
+window.fetchProductById = fetchProductById;
+
+/**
  * Local Customer Interest Tracker (Option 3)
+ * Also queues the same signal for server-side sync (see queueClickForServer)
+ * so popularity reflects all visitors, not just this browser.
  */
 function trackLocalInterest(productId, points) {
   try {
@@ -246,6 +340,8 @@ function trackLocalInterest(productId, points) {
   } catch (e) {
     console.error('Failed to save local interest:', e);
   }
+
+  queueClickForServer(productId, points);
 }
 
 function getLocalInterest(productId) {
@@ -257,4 +353,61 @@ function getLocalInterest(productId) {
     return 0;
   }
 }
+
+/**
+ * Batches click/interest signals in localStorage and flushes them to Google
+ * Sheets as ClickCount via sheetsWriter.js, instead of one request per click.
+ */
+const CLICK_QUEUE_KEY = 'hop_pending_clicks';
+const CLICK_FLUSH_DELAY_MS = 3000;
+let clickFlushTimer = null;
+
+function queueClickForServer(productId, points) {
+  try {
+    const queue = JSON.parse(localStorage.getItem(CLICK_QUEUE_KEY) || '{}');
+    queue[productId] = (queue[productId] || 0) + points;
+    localStorage.setItem(CLICK_QUEUE_KEY, JSON.stringify(queue));
+  } catch (e) {
+    console.error('Failed to queue click for server sync:', e);
+    return;
+  }
+
+  clearTimeout(clickFlushTimer);
+  clickFlushTimer = setTimeout(flushClickQueue, CLICK_FLUSH_DELAY_MS);
+}
+
+function flushClickQueue() {
+  let queue;
+  try {
+    queue = JSON.parse(localStorage.getItem(CLICK_QUEUE_KEY) || '{}');
+  } catch (e) {
+    return;
+  }
+  if (Object.keys(queue).length === 0) return;
+
+  localStorage.removeItem(CLICK_QUEUE_KEY);
+
+  if (typeof sendClickIncrementToSheets === 'function') {
+    sendClickIncrementToSheets(queue);
+  }
+}
+
+// Flush any queued clicks when the visitor navigates away, so short visits aren't lost
+window.addEventListener('pagehide', flushClickQueue);
+
+/**
+ * Shared popularity score for "Best Sellers" / "Most Selling" ranking.
+ * Real sales dominate; server-synced ClickCount is a lightweight secondary
+ * signal. Local, unsynced interest is only used as a fallback when a product
+ * has no ClickCount yet (e.g. Sheets unreachable and running off the local
+ * products.json fallback).
+ */
+function getPopularityScore(product) {
+  const sales = Number(product.OrderCount) || 0;
+  const clicks = Number(product.ClickCount) || 0;
+  const localFallback = clicks === 0 ? getLocalInterest(product.ProductID) : 0;
+  return sales * 10 + clicks + localFallback;
+}
+
+window.getPopularityScore = getPopularityScore;
 

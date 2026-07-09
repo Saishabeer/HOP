@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
   <title>About Us | House of Prime Collections - Elegant Korean Accessories</title>
   <meta name="description" content="Discover the story behind House of Prime Collections. Our passion is delivering premium, handpicked Korean jewelry to style enthusiasts across India.">
   
@@ -215,10 +216,8 @@
       <!-- Categories -->
       <div class="footer__col">
         <h3 class="footer__title">Categories</h3>
-        <div class="footer__links">
+        <div class="footer__links" id="footer-categories-list">
           <a href="shop.html?category=Korean%20Earrings" class="footer__link">Korean Earrings</a>
-          <a href="shop.html?category=Stud%20Earrings" class="footer__link">Stud Earrings</a>
-          <a href="shop.html?category=Fancy%20Earrings" class="footer__link">Fancy Accessories</a>
         </div>
       </div>
 
@@ -229,11 +228,11 @@
           <p style="margin-bottom: 8px;">For orders, custom requests & styling inquiries:</p>
           <span style="display: flex; align-items: center; gap: 8px;">
             <svg style="width: 16px; height: 16px; fill: var(--champagne-gold);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.01-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-            +91 95144 87662 / +91 75488 81745 (WhatsApp)
+            <a href="#" id="footer-phone-primary" class="footer__link" style="color: inherit;">+91 95144 87662</a> (WhatsApp) / <a href="#" id="footer-phone-secondary" class="footer__link" style="color: inherit;">+91 75488 81745</a>
           </span>
           <span style="display: flex; align-items: center; gap: 8px;">
             <svg style="width: 16px; height: 16px; fill: var(--champagne-gold);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-            hoprimecol@gmail.com
+            <a href="#" id="footer-email" class="footer__link" style="color: inherit;">hoprimecol@gmail.com</a>
           </span>
         </div>
       </div>
@@ -242,7 +241,7 @@
 
     <!-- Footer Bottom -->
     <div class="container footer__bottom">
-      <span>&copy; 2026 House of Prime Collections. All rights reserved.</span>
+      <span>&copy; <span id="footer-year">2026</span> House of Prime Collections. All rights reserved.</span>
       <div class="footer__bottom-links">
         <a href="policy.html?tab=shipping" class="footer__bottom-link">Shipping Policy</a>
         <a href="policy.html?tab=returns" class="footer__bottom-link">Returns Policy</a>
@@ -270,5 +269,6 @@
   <script src="js/services/CartService.js" defer></script>
   <script src="js/cart.js" defer></script>
   <script src="js/whatsapp.js" defer></script>
+  <script src="js/site-info.js" defer></script>
 </body>
 </html>

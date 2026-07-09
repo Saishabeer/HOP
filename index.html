@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
   <title>House of Prime Collections | Korean Fashion Jewelry & Accessories</title>
   <meta name="description" content="Shop premium Korean fashion jewelry at Rs.70-Rs.100. Discover stylish earrings, stud earrings & fancy accessories. Order via WhatsApp.">
   <meta name="keywords" content="Korean earrings India, fashion jewelry online, stud earrings, fancy earrings, affordable jewelry">
@@ -70,32 +71,8 @@
     
     <!-- HERO BANNER CAROUSEL -->
     <section class="hero">
-      <div class="hero__slider">
-        
-        <!-- Slide 1 -->
-        <div class="hero__slide active">
-          <img class="hero__slide-bg" src="https://images.unsplash.com/photo-1630019852942-f89202989a59?w=1440&auto=format&fit=crop&q=80" alt="Korean Premium Earrings Featured" fetchpriority="high">
-          <div class="hero__slide-overlay"></div>
-          <div class="hero__content">
-            <span class="hero__subtitle">Exquisite Korean Designs</span>
-            <h2 class="hero__title">Sophistication in Every Detail</h2>
-            <p class="hero__desc">Discover our premium range of Korean earrings & fashion accessories. Hand-selected quality, priced affordably between Rs.70 - Rs.100.</p>
-            <a href="shop.html" class="btn btn-secondary hero__btn">Shop Collections</a>
-          </div>
-        </div>
-
-        <!-- Slide 2 -->
-        <div class="hero__slide">
-          <img class="hero__slide-bg" src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=1440&auto=format&fit=crop&q=80" alt="Korean Jewelry Handcrafted Quality">
-          <div class="hero__slide-overlay"></div>
-          <div class="hero__content">
-            <span class="hero__subtitle">Daily Wear & Special Occasions</span>
-            <h2 class="hero__title">Timeless Luxury, Everyday Price</h2>
-            <p class="hero__desc">Elevate your outfit instantly with our sparkling studs and fancy tassels. Quick and convenient chat-based ordering via WhatsApp.</p>
-            <a href="shop.html" class="btn btn-primary hero__btn">Browse All Products</a>
-          </div>
-        </div>
-
+      <div class="hero__slider" id="hero-slider">
+        <!-- Banners will be populated here dynamically via JS -->
       </div>
 
       <!-- Controls -->
@@ -107,9 +84,8 @@
       </button>
 
       <!-- Dots Indicator -->
-      <div class="hero__dots">
-        <span class="hero__dot active" data-index="0"></span>
-        <span class="hero__dot" data-index="1"></span>
+      <div class="hero__dots" id="hero-dots">
+        <!-- Dots populated by JS -->
       </div>
     </section>
 
@@ -129,64 +105,7 @@
         </button>
         
         <div class="categories-carousel" id="categories-grid">
-          <!-- Cards will be populated here -->
-          
-          <!-- Category 1 -->
-          <a href="shop.html?category=Korean%20Earrings" class="cat-card">
-            <img class="cat-card__img" src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&auto=format&fit=crop&q=80" alt="Korean Earrings">
-            <div class="cat-card__overlay"></div>
-            <div class="cat-card__content">
-              <div class="cat-card__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </div>
-              <div class="cat-card__text">
-                <h3 class="cat-card__title">Korean Earrings</h3>
-                <span class="cat-card__count">120+ Designs</span>
-              </div>
-              <div class="cat-card__arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              </div>
-            </div>
-          </a>
-
-          <!-- Category 2 -->
-          <a href="shop.html?category=Stud%20Earrings" class="cat-card">
-            <img class="cat-card__img" src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop&q=80" alt="Stud Earrings">
-            <div class="cat-card__overlay"></div>
-            <div class="cat-card__content">
-              <div class="cat-card__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
-              </div>
-              <div class="cat-card__text">
-                <h3 class="cat-card__title">Stud Earrings</h3>
-                <span class="cat-card__count">85+ Designs</span>
-              </div>
-              <div class="cat-card__arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              </div>
-            </div>
-          </a>
-
-          <!-- Category 3 -->
-          <a href="shop.html?category=Fancy%20Earrings" class="cat-card">
-            <img class="cat-card__img" src="https://images.unsplash.com/photo-1635767798638-3e25273a8236?w=600&auto=format&fit=crop&q=80" alt="Fancy Earrings">
-            <div class="cat-card__overlay"></div>
-            <div class="cat-card__content">
-              <div class="cat-card__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              </div>
-              <div class="cat-card__text">
-                <h3 class="cat-card__title">Fancy Earrings</h3>
-                <span class="cat-card__count">95+ Designs</span>
-              </div>
-              <div class="cat-card__arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              </div>
-            </div>
-          </a>
-
-          <!-- More categories would be populated by JS -->
-          
+          <!-- Populated dynamically by renderCategoryCards() in js/home.js -->
         </div>
         
         <button class="cat-nav-btn cat-next" id="cat-next" aria-label="Next categories">
@@ -427,10 +346,8 @@
       <!-- Categories -->
       <div class="footer__col">
         <h3 class="footer__title">Categories</h3>
-        <div class="footer__links">
+        <div class="footer__links" id="footer-categories-list">
           <a href="shop.html?category=Korean%20Earrings" class="footer__link">Korean Earrings</a>
-          <a href="shop.html?category=Stud%20Earrings" class="footer__link">Stud Earrings</a>
-          <a href="shop.html?category=Fancy%20Earrings" class="footer__link">Fancy Accessories</a>
         </div>
       </div>
 
@@ -441,11 +358,11 @@
           <p style="margin-bottom: 8px;">For orders, custom requests & styling inquiries:</p>
           <span style="display: flex; align-items: center; gap: 8px;">
             <svg style="width: 16px; height: 16px; fill: var(--champagne-gold);" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.01-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-            +91 95144 87662 / +91 75488 81745 (WhatsApp)
+            <a href="#" id="footer-phone-primary" class="footer__link" style="color: inherit;">+91 95144 87662</a> (WhatsApp) / <a href="#" id="footer-phone-secondary" class="footer__link" style="color: inherit;">+91 75488 81745</a>
           </span>
           <span style="display: flex; align-items: center; gap: 8px;">
             <svg style="width: 16px; height: 16px; fill: var(--champagne-gold);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-            hoprimecol@gmail.com
+            <a href="#" id="footer-email" class="footer__link" style="color: inherit;">hoprimecol@gmail.com</a>
           </span>
         </div>
       </div>
@@ -454,7 +371,7 @@
 
     <!-- Footer Bottom -->
     <div class="container footer__bottom">
-      <span>&copy; 2026 House of Prime Collections. All rights reserved.</span>
+      <span>&copy; <span id="footer-year">2026</span> House of Prime Collections. All rights reserved.</span>
       <div class="footer__bottom-links">
         <a href="policy.html?tab=shipping" class="footer__bottom-link">Shipping Policy</a>
         <a href="policy.html?tab=returns" class="footer__bottom-link">Returns Policy</a>
@@ -488,17 +405,8 @@
   <script src="js/services/CartService.js" defer></script>
   <script src="js/cart.js" defer></script>
   <script src="js/whatsapp.js" defer></script>
+  <script src="js/site-info.js" defer></script>
   <script src="js/home.js" defer></script>
   <script src="js/admin-controls.js?v=3" defer></script>
-
-  <script defer>
-    document.addEventListener('DOMContentLoaded', () => {
-      const waFloat = document.querySelector('.whatsapp-float');
-      const waCta = document.getElementById('wa-cta-btn');
-      const url = WhatsApp.getGeneralChatUrl();
-      if (waFloat) waFloat.href = url;
-      if (waCta) waCta.href = url;
-    });
-  </script>
 </body>
 </html>

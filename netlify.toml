@@ -1,6 +1,7 @@
 # netlify.toml - House of Prime Collections Deployment Configuration
 
 [build]
+  command = "echo 'Static Site - No Build'"
   publish = "."
 
 # --- REDIRECT RULES ---

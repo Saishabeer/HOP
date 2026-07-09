@@ -1,6 +1,7 @@
 // home.js - Home Page Rendering and Slider Control
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await loadBanners();
   initHeroSlider();
   await loadHomeProducts();
   setupWAFloatLink();
@@ -71,17 +72,58 @@ function initHeroSlider() {
 }
 
 /**
+ * Load and render dynamic banners
+ */
+async function loadBanners() {
+  const slider = document.getElementById('hero-slider');
+  const dotsContainer = document.getElementById('hero-dots');
+  if (!slider || !dotsContainer) return;
+  
+  try {
+    const banners = await fetchBanners();
+    if (banners.length === 0) return;
+    
+    let sliderHtml = '';
+    let dotsHtml = '';
+    
+    banners.forEach((banner, index) => {
+      const activeClass = index === 0 ? 'active' : '';
+      sliderHtml += `
+        <div class="hero__slide ${activeClass}" data-banner-id="${banner.BannerID}">
+          <img class="hero__slide-bg" src="${sanitize(banner.ImageURL)}" alt="${sanitize(banner.Title)}" ${index === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>
+          <div class="hero__slide-overlay"></div>
+          <div class="hero__content">
+            ${banner.Subtitle ? `<span class="hero__subtitle">${sanitize(banner.Subtitle)}</span>` : ''}
+            ${banner.Title ? `<h2 class="hero__title">${sanitize(banner.Title)}</h2>` : ''}
+            ${banner.Description ? `<p class="hero__desc">${sanitize(banner.Description)}</p>` : ''}
+            ${banner.ButtonText ? `<a href="${sanitize(banner.ButtonLink || '#')}" class="btn ${index === 0 ? 'btn-secondary' : 'btn-primary'} hero__btn">${sanitize(banner.ButtonText)}</a>` : ''}
+          </div>
+        </div>
+      `;
+      dotsHtml += `<span class="hero__dot ${activeClass}" data-index="${index}"></span>`;
+    });
+    
+    slider.innerHTML = sliderHtml;
+    dotsContainer.innerHTML = dotsHtml;
+  } catch (e) {
+    console.error("Failed to load banners", e);
+  }
+}
+
+/**
  * Load and render home page sections (New Arrivals, Featured, Best Sellers)
  */
 async function loadHomeProducts() {
   const newArrivalsRow = document.getElementById('new-arrivals-row');
   const featuredRow = document.getElementById('featured-row');
   const bestSellersRow = document.getElementById('best-sellers-row');
-  
+  const categoriesGrid = document.getElementById('categories-grid');
+
   // Show Loading Skeletons
   Skeleton.showIn(newArrivalsRow, 4);
   Skeleton.showIn(featuredRow, 3);
   Skeleton.showIn(bestSellersRow, 4);
+  Skeleton.showIn(categoriesGrid, 3);
 
   try {
     const products = await fetchProducts();
@@ -110,13 +152,12 @@ async function loadHomeProducts() {
       .slice(0, 6);
     renderProductGrid(featuredRow, featured);
 
-    // 3. Filter Best Sellers (Max 8) - sorted by (OrderCount + LocalInterest) descending
+    // 3. Filter Best Sellers (Max 8) - sorted by popularity (real sales weighted above clicks) descending
     const bestSellers = products
       .filter(p => p.BestSeller)
       .sort((a, b) => {
-        const scoreA = (a.OrderCount || 0) + getLocalInterest(a.ProductID);
-        const scoreB = (b.OrderCount || 0) + getLocalInterest(b.ProductID);
-        if (scoreB !== scoreA) return scoreB - scoreA;
+        const scoreDiff = getPopularityScore(b) - getPopularityScore(a);
+        if (scoreDiff !== 0) return scoreDiff;
         return b.DisplayOrder - a.DisplayOrder;
       })
       .slice(0, 8);
@@ -127,7 +168,7 @@ async function loadHomeProducts() {
 
   } catch (error) {
     console.error("Failed to load home page products:", error);
-    [newArrivalsRow, featuredRow, bestSellersRow].forEach(row => {
+    [newArrivalsRow, featuredRow, bestSellersRow, categoriesGrid].forEach(row => {
       if (row) row.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--warm-gray);">Failed to load products. Please refresh.</p>`;
     });
   }
@@ -216,14 +257,13 @@ function renderCategoryCards(products) {
   });
   
   const uniqueCategories = Array.from(catMap.keys());
-  
-  // If no products/categories, leave fallback HTML in place
+
   if (uniqueCategories.length === 0) {
-    initCategoryCarousel();
+    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--warm-gray);">No categories to show yet.</p>`;
     return;
   }
 
-  container.innerHTML = ''; // Clear fallback category cards
+  container.innerHTML = '';
 
   uniqueCategories.forEach(category => {
     // Determine cover image
