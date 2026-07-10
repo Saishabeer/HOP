@@ -623,6 +623,23 @@
   object-fit: cover;
   border: 1px solid var(--velvet-cream);
   background-color: var(--velvet-cream);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  /* On a narrow modal, a preview image (especially the banner form's wide
+     120x60 one) plus a 16px gap left very little width for the native file
+     input, which truncated its own "Choose file / No file chosen" label.
+     Stack them instead so the file input gets the modal's full width, same
+     as every other field. */
+  .admin-modal__img-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-modal__img-row .admin-form-input {
+    width: 100%;
+  }
 }
 
 /* Buttons */
@@ -634,7 +651,11 @@
      buttons scroll out of view and clicks land on whatever's behind them. */
   position: sticky;
   bottom: 0;
-  margin: 12px -28px -28px;
+  /* 24px top margin (was 12px) -- forms whose last field sits directly
+     above this footer (e.g. the banner form's Display Order) were only
+     clearing it by a couple of px even scrolled all the way down, so the
+     field and the sticky bar visually ran into each other. */
+  margin: 24px -28px -28px;
   padding: 12px 28px 28px;
   background-color: var(--ivory-white);
   border-top: 1px solid var(--velvet-cream);

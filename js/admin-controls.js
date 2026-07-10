@@ -266,7 +266,7 @@
           <div class="admin-form-group">
             <label>Banner Image ${isEdit ? '' : '*'}</label>
             <div class="admin-modal__img-row">
-              <img src="${isEdit && banner.ImageURL ? banner.ImageURL : 'https://placehold.co/800x400'}" class="admin-modal__img-preview" id="admin-banner-img-preview" alt="Preview" style="max-height: 120px; object-fit: cover;">
+              <img src="${isEdit && banner.ImageURL ? banner.ImageURL : 'https://placehold.co/800x400'}" class="admin-modal__img-preview" id="admin-banner-img-preview" alt="Preview" style="width: 120px; height: 60px; object-fit: cover;">
               <input type="file" id="admin-banner-img-file" class="admin-form-input" accept="image/jpeg, image/png, image/webp" ${isEdit ? '' : 'required'}>
             </div>
             <small style="color: var(--warm-gray);">Recommended aspect ratio: 16:9 or similar wide format.</small>
@@ -829,9 +829,9 @@
 
           <div class="admin-form-row">
             <div class="admin-form-group">
-              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-                <label for="admin-edit-category" style="margin-bottom: 0;">Category *</label>
-                <a href="#" id="toggle-new-category" style="font-size: 12px; color: var(--primary-rose); text-decoration: none; font-weight: bold;">+ New Category</a>
+              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 8px; margin-bottom: 4px;">
+                <label for="admin-edit-category" style="margin-bottom: 0; white-space: nowrap;">Category *</label>
+                <a href="#" id="toggle-new-category" style="font-size: 12px; color: var(--primary-rose); text-decoration: none; font-weight: bold; white-space: nowrap;">+ New Category</a>
               </div>
               <select id="admin-edit-category" class="admin-form-select" required>
                 ${categoryOptionsHtml}
