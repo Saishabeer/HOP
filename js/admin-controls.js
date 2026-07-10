@@ -850,6 +850,24 @@
           </div>
 
           <div class="admin-form-group">
+            <label style="margin-bottom: 4px;">Specifications (optional)</label>
+            <div class="admin-form-row">
+              <div class="admin-form-group">
+                <label for="admin-edit-material">Material</label>
+                <input type="text" id="admin-edit-material" class="admin-form-input" placeholder="e.g. Alloy, Rhinestones" maxlength="80" value="${isEdit ? (activeProduct.Material || '') : ''}">
+              </div>
+              <div class="admin-form-group">
+                <label for="admin-edit-color">Color</label>
+                <input type="text" id="admin-edit-color" class="admin-form-input" placeholder="e.g. Gold, White" maxlength="80" value="${isEdit ? (activeProduct.Color || '') : ''}">
+              </div>
+              <div class="admin-form-group">
+                <label for="admin-edit-weight">Weight</label>
+                <input type="text" id="admin-edit-weight" class="admin-form-input" placeholder="e.g. 6g" maxlength="20" value="${isEdit ? (activeProduct.Weight || '') : ''}">
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-form-group">
             <label>Product Main Image ${isEdit ? '' : '*'}</label>
             <div class="admin-modal__img-row">
               <img src="${isEdit ? (activeProduct.ProductImageURL || 'https://placehold.co/100') : 'https://placehold.co/100'}" class="admin-modal__img-preview" id="admin-edit-img-preview" alt="Preview">
@@ -977,6 +995,9 @@
     }
     const stockVal = Number(document.getElementById('admin-edit-stock').value);
     const desc = document.getElementById('admin-edit-desc').value.trim();
+    const material = document.getElementById('admin-edit-material').value.trim();
+    const color = document.getElementById('admin-edit-color').value.trim();
+    const weight = document.getElementById('admin-edit-weight').value.trim();
     const fileInput = document.getElementById('admin-edit-img-file');
     const saveBtn = document.getElementById('admin-save-btn');
     const saveText = document.getElementById('admin-save-text');
@@ -1030,9 +1051,9 @@
         Description: desc,
         ProductImageURL: finalImageUrl,
         ...additionalImages,
-        Material: activeProduct ? (activeProduct.Material || '') : '',
-        Color: activeProduct ? (activeProduct.Color || '') : '',
-        Weight: activeProduct ? (activeProduct.Weight || '') : '',
+        Material: material,
+        Color: color,
+        Weight: weight,
         NewArrival: activeProduct ? (activeProduct.NewArrival || false) : true,
         FeaturedProduct: activeProduct ? (activeProduct.FeaturedProduct || false) : false,
         BestSeller: activeProduct ? (activeProduct.BestSeller || false) : false,

@@ -449,6 +449,7 @@ function getTrendingProducts(products, usedIds) {
 
 // UI Renderers
 function createCompactProductCard(product) {
+  const isOutOfStock = product.StockQuantity <= 0;
   const hasDiscount = product.DiscountPrice !== null && product.DiscountPrice > 0;
   const price = hasDiscount ? product.DiscountPrice : product.Price;
   const oldPriceHtml = hasDiscount ? `<span class="compact-rec-card__old-price">${CONFIG.CURRENCY}${product.Price}</span>` : '';
@@ -485,15 +486,35 @@ function createCompactProductCard(product) {
         ${oldPriceHtml}
         ${discountHtml}
       </div>
+      ${isOutOfStock
+        ? `<button class="btn btn-primary btn-disabled compact-rec-card__add" disabled>Sold Out</button>`
+        : `<button class="btn btn-primary compact-rec-card__add" data-id="${product.ProductID}" data-stock="${product.StockQuantity}" aria-label="Add to cart">
+             <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+             <span>Add</span>
+           </button>`}
     </div>
   `;
-  
+
   card.addEventListener('click', () => {
     if (typeof trackLocalInterest === 'function') {
       trackLocalInterest(product.ProductID, 1);
     }
   });
-  
+
+  const addBtn = card.querySelector('.compact-rec-card__add:not(.btn-disabled)');
+  if (addBtn) {
+    addBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const id = addBtn.getAttribute('data-id');
+      const stock = parseInt(addBtn.getAttribute('data-stock'), 10);
+      Cart.add(id, 1, stock);
+      if (typeof trackLocalInterest === 'function') {
+        trackLocalInterest(id, 3);
+      }
+    });
+  }
+
   return card;
 }
 

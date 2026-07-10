@@ -58,6 +58,18 @@ function init() {
   passwordInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') login();
   });
+
+  // Show/hide password toggle
+  const toggleBtn = document.getElementById('toggle-password-visibility');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = passwordInput.type === 'password';
+      passwordInput.type = isHidden ? 'text' : 'password';
+      toggleBtn.querySelector('.eye-open').style.display = isHidden ? 'none' : 'block';
+      toggleBtn.querySelector('.eye-closed').style.display = isHidden ? 'block' : 'none';
+      toggleBtn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
+  }
 }
 
 // --- AUTHENTICATION ---
@@ -85,7 +97,7 @@ async function login() {
     });
 
     if (response.status === 404) {
-      showToast('Error 404: Please restart your terminal command (node dev-server.js) to apply the latest fixes!', 'error');
+      showToast('Login service not found. If testing locally, restart your dev server (node dev-server.js).', 'error');
       return;
     }
 
@@ -93,7 +105,7 @@ async function login() {
     try {
       data = await response.json();
     } catch(e) {
-      showToast('Server returned invalid data. Please restart the dev server.', 'error');
+      showToast('Unexpected response from the server. Please try again shortly.', 'error');
       return;
     }
 
@@ -103,12 +115,15 @@ async function login() {
       setTimeout(() => {
         window.location.href = 'index.html';
       }, 900);
+    } else if (data.error && data.error !== 'Incorrect password') {
+      // Surface server-side errors (e.g. "Server misconfiguration") as-is
+      showToast(data.error, 'error');
     } else {
-      showToast(data.error || 'Incorrect password. Please try again.', 'error');
+      showToast('Wrong password. Please check and try again.', 'error');
     }
   } catch (error) {
     console.error('[Admin] Login request failed:', error);
-    showToast('Connection error. Check that the dev server is running.', 'error');
+    showToast('Connection error. Please check your internet connection and try again.', 'error');
   } finally {
     if (loginBtn) {
       loginBtn.disabled = false;

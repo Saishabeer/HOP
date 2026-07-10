@@ -82,4 +82,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const waCta = document.getElementById('wa-cta-btn');
   if (waFloat) waFloat.href = url;
   if (waCta) waCta.href = url;
+
+  // Being fixed to the bottom-right corner, this button sits on top of
+  // whatever scrolls underneath it (product card Add buttons, form inputs,
+  // etc). Hide it while actively scrolling and bring it back once the user
+  // pauses, so it never blocks a tap/type target for more than a moment.
+  if (waFloat) {
+    let hideTimer = null;
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener('scroll', () => {
+      const currentY = window.scrollY;
+      const scrollingDown = currentY > lastScrollY;
+      lastScrollY = currentY;
+
+      if (scrollingDown) {
+        waFloat.classList.add('whatsapp-float--hidden');
+      }
+
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => {
+        waFloat.classList.remove('whatsapp-float--hidden');
+      }, 400);
+    }, { passive: true });
+  }
 });

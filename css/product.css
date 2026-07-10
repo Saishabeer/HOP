@@ -600,6 +600,15 @@
   color: var(--success);
 }
 
+.compact-rec-card__add {
+  margin-top: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  gap: 6px;
+}
+
 @media (max-width: 1024px) {
   .compact-rec-card {
     flex: 0 0 calc(33.333% - 10.6px); /* 3 cards on tablet */
