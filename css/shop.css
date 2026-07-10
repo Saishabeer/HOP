@@ -339,14 +339,10 @@
   .catalog-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
-    /* Reserve a safe zone so the right column's cards never scroll under the
-       fixed WhatsApp button (60px + 24px inset here), which was covering the
-       price/Add button on whichever card happened to be at that scroll position. */
-    padding-right: 56px;
   }
 
-  /* Icon-only Add button: frees up enough width for the price (e.g. "Rs.100")
-     to render on one line instead of being clipped now that cards are narrower. */
+  /* Icon-only Add button: keeps things compact and leaves the price plenty
+     of room to render on one line even on narrow cards. */
   .catalog-grid .add-to-cart-btn {
     min-width: 0;
     padding: 0.5rem;
@@ -357,9 +353,12 @@
 }
 
 @media (max-width: 480px) {
-  .catalog-grid {
-    /* WhatsApp button shrinks to 50px + 16px inset at this breakpoint (see global.css) */
-    padding-right: 46px;
+  /* Right-column cards sit directly under the fixed WhatsApp button at rest
+     (scroll-hide only helps while actively scrolling) -- nudge just their
+     own Add button left, inside the card's existing padding, instead of
+     reserving a grid-wide gutter that left a visible empty column. */
+  .catalog-grid .product-card:nth-child(2n) .product-card__footer {
+    padding-right: 48px;
   }
 }
 

@@ -48,7 +48,13 @@ async function renderCartPage() {
   const container = document.getElementById('cart-items-container');
   const cartLayout = document.getElementById('cart-layout-container');
   const cartEmpty = document.getElementById('cart-empty-container');
-  
+  const cartLoading = document.getElementById('cart-loading-container');
+
+  // This static placeholder is visible by default in the HTML and was never
+  // hidden by any code path below -- it just sat there permanently alongside
+  // whatever real content rendered, looking like a stuck "Loading..." state.
+  if (cartLoading) cartLoading.style.display = 'none';
+
   const subtotalEl = document.getElementById('cart-subtotal');
   const shippingEl = document.getElementById('cart-shipping');
   const totalEl = document.getElementById('cart-total');
