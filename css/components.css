@@ -52,7 +52,7 @@
 
 .btn-secondary {
   background-color: var(--champagne-gold);
-  color: var(--deep-charcoal);
+  color: var(--text-on-light-accent);
   font-weight: 700;
 }
 

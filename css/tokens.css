@@ -25,6 +25,10 @@
      (always dark, for consistent contrast regardless of page theme). */
   --text-on-accent: #FDF8F4;
   --toast-bg: #2D2D2D;
+  /* Dark text for elements sitting on the light/gold accent (champagne-gold
+     stays light in both themes, so its text must stay fixed-dark too --
+     using the flipping --deep-charcoal here goes light-on-light in dark mode). */
+  --text-on-light-accent: #2D2D2D;
 
   /* Typography */
   --font-display: 'Cormorant Garamond', serif;

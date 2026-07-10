@@ -189,7 +189,7 @@ p {
 
 .badge-sale {
   background-color: var(--champagne-gold);
-  color: var(--deep-charcoal);
+  color: var(--text-on-light-accent);
 }
 
 .badge-soldout {

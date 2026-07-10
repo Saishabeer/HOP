@@ -4,6 +4,9 @@
   command = "echo 'Static Site - No Build'"
   publish = "."
 
+[functions]
+  directory = "netlify/functions"
+
 # --- REDIRECT RULES ---
 
 # Custom 404 page

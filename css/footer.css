@@ -2,7 +2,10 @@
 
 .footer {
   background-color: var(--deep-rose);
-  color: var(--velvet-cream);
+  /* Fixed light text: the footer's own background is always dark-rose
+     (--deep-rose isn't flipped for dark mode either), so its text must
+     stay a constant light tone rather than the theme-flipping neutrals. */
+  color: var(--text-on-accent);
   padding: 48px 0 24px;
   border-top: 1px solid rgba(212, 168, 83, 0.2); /* Champagne Gold with opacity */
   font-family: var(--font-body);
@@ -114,7 +117,7 @@
 
 .footer__social-btn:hover {
   background-color: var(--champagne-gold);
-  color: var(--deep-charcoal);
+  color: var(--text-on-light-accent);
   transform: translateY(-2px);
 }
 
