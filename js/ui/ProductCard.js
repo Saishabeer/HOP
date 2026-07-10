@@ -26,10 +26,13 @@ const ProductCard = (() => {
       if (hasDiscount) badgesHtml += `<span class="badge badge-sale">Sale</span>`;
     }
 
-    // Pricing display
-    const pricingHtml = hasDiscount 
+    // Pricing display. The old price intentionally omits the currency prefix
+    // (just "70" not "Rs.70") -- it's understood from context next to the
+    // current price, and dropping it is the difference between a discounted
+    // price fitting on one line in the tightest card layouts or not.
+    const pricingHtml = hasDiscount
       ? `<span class="price-display__current">${CONFIG.CURRENCY}${product.DiscountPrice}</span>
-         <span class="price-display__old">${CONFIG.CURRENCY}${product.Price}</span>`
+         <span class="price-display__old">${product.Price}</span>`
       : `<span class="price-display__current">${CONFIG.CURRENCY}${product.Price}</span>`;
 
     // Action button

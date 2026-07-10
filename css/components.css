@@ -164,15 +164,24 @@
   justify-content: space-between;
   gap: 8px;
   width: 100%;
+  /* Keep every card's footer the same height regardless of whether its own
+     price happens to have a discount or not, so the price/button row lands
+     at the same y-position across every card in a shop grid row. */
+  min-height: 44px;
 }
 
 /* --- PRICE DISPLAY --- */
 .price-display {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 4px;
   flex: 1;
-  flex-wrap: wrap;
+  /* Was flex-wrap: wrap -- a discounted price (current + strikethrough old)
+     wrapped onto 2 lines while a plain price stayed on 1, making the footer
+     taller on discounted cards and visibly misaligning it against its
+     neighbors in the same row. Force one line and let it shrink instead. */
+  flex-wrap: nowrap;
+  overflow: hidden;
   min-width: 0; /* let the flex item shrink below its content size instead of overflowing the card */
 }
 
@@ -188,6 +197,12 @@
   font-size: 0.85rem;
   color: var(--warm-gray);
   text-decoration: line-through;
+  /* Graceful fallback for any future price value tight layouts can't fully
+     fit -- truncates with an ellipsis instead of a raw character clip. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 /* --- CATEGORY CARD --- */
