@@ -162,7 +162,16 @@
 
 /* --- SECTION GENERAL --- */
 .section {
-  padding: 64px 0;
+  /* Longhand on purpose -- several sections carry both "section" and
+     "container" classes on the same element (e.g. <section class="section
+     container">). The old `padding: 64px 0` shorthand set padding-left/
+     right to 0 as part of that shorthand, silently overriding .container's
+     16px horizontal padding since this rule loads after it. That zeroed
+     the section's horizontal inset, which combined with a child carousel's
+     `margin: 0 -16px` edge-to-edge trick to push the whole row (and its
+     first card) 16px past the left edge of the screen. */
+  padding-top: 64px;
+  padding-bottom: 64px;
 }
 
 .section--cream {
@@ -460,6 +469,11 @@
   .categories-carousel {
     margin: 0 -16px;
     padding: 0 16px 24px 16px;
+    /* See .product-row below -- same scroll-snap + padding combination that
+       can leave the container's initial scrollLeft at 16px instead of 0,
+       shifting card 1 off the left edge of the screen on load. */
+    scroll-padding-left: 16px;
+    scroll-padding-right: 16px;
   }
   
   .cat-card {
@@ -486,6 +500,15 @@
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    /* Without this, Chrome's snap-position calculation on load ignores the
+       row's own padding-left and treats the first card's un-padded edge as
+       the "start" snap point -- initializing scrollLeft to 16px (the
+       padding amount) instead of 0, which shifted card 1 that same 16px to
+       the left, off the edge of the screen, before the user ever touched
+       the carousel. scroll-padding tells the snap algorithm where the real
+       edge is. */
+    scroll-padding-left: 16px;
+    scroll-padding-right: 16px;
     gap: 16px;
     padding-bottom: 16px;
     margin: 0 -16px;
@@ -493,7 +516,7 @@
     padding-right: 16px;
     scrollbar-width: none; /* Hide scrollbar for Firefox */
   }
-  
+
   .product-row::-webkit-scrollbar {
     display: none; /* Hide scrollbar for Chrome/Safari */
   }
@@ -584,6 +607,11 @@
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    /* See .product-row above -- same scroll-snap + padding combination that
+       can leave the container's initial scrollLeft at 16px instead of 0,
+       shifting card 1 off the left edge of the screen on load. */
+    scroll-padding-left: 16px;
+    scroll-padding-right: 16px;
     gap: 16px;
     margin: 0 -16px;
     padding: 0 16px 16px;
