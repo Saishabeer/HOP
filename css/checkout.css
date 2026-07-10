@@ -2,7 +2,15 @@
 
 .checkout-layout {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  /* minmax(0, ...) instead of a bare fr unit -- a bare `1.2fr`/`0.8fr` track
+     has an implicit min-width of "auto" (its content's min-content size), so
+     a long unbreakable child (e.g. a nowrap product name in the order
+     summary) can silently blow the track past the viewport. Because the
+     page has a defensive overflow-x:hidden, that overflow doesn't show as a
+     scrollbar -- it just clips the grid item's own right-side padding,
+     making the checkout card look flush against the right edge. minmax(0, fr)
+     lets the track shrink to fit instead of growing to fit its content. */
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   gap: 40px;
   margin-top: 24px;
   margin-bottom: 64px;
@@ -10,8 +18,17 @@
 
 @media (max-width: 992px) {
   .checkout-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 32px;
+  }
+}
+
+@media (max-width: 576px) {
+  .checkout-layout {
+    /* A touch more breathing room than the site-wide 16px container padding
+       gives every other page, for a slightly more premium checkout feel. */
+    margin-left: 4px;
+    margin-right: 4px;
   }
 }
 
@@ -20,7 +37,8 @@
   background-color: var(--ivory-white);
   border: 1px solid var(--velvet-cream);
   border-radius: var(--radius-card);
-  padding: 24px;
+  padding: 32px;
+  min-width: 0;
 }
 
 .checkout-form-card__title {
@@ -35,7 +53,7 @@
 /* Grid layout for form fields */
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -43,6 +61,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .form-group--full {
@@ -80,12 +99,41 @@
 }
 
 @media (max-width: 576px) {
-  .form-grid {
-    grid-template-columns: 1fr; /* Single column on mobile */
+  .checkout-form-card {
+    /* Roomier than the pre-fix 24px, but pulled in from the 32px desktop
+       value so the narrow viewport keeps enough width for the inputs
+       themselves. */
+    padding: 24px 18px;
   }
 
   .checkout-form-card__title {
     text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr); /* Single column on mobile */
+    gap: 14px;
+  }
+
+  .form-group {
+    gap: 4px;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+  }
+
+  .form-textarea {
+    min-height: 64px;
+  }
+
+  /* Longer placeholders ("Detailed street address for courier delivery")
+     were getting visually cut off against the input's edge on narrow
+     screens at the same size as typed text -- shrink just the placeholder,
+     not the value the user actually types. */
+  .form-input::placeholder {
+    font-size: 0.82rem;
   }
 }
 
