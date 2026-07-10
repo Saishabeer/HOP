@@ -9,6 +9,12 @@ html {
   font-size: 100%;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* Safety net: no single element should ever be able to force horizontal
+     scrolling on the whole page (a stray fixed-width child, an overflowing
+     image, etc). Content should reflow/wrap or get clipped, not push the
+     viewport wider than the screen. */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -16,6 +22,8 @@ body {
   text-rendering: optimizeSpeed;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 img, picture, video, canvas, svg {
