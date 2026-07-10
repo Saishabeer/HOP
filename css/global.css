@@ -109,7 +109,10 @@ p {
     box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6);
   }
   70% {
-    box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+    /* Was 15px: the glow ring reached past nearby card content (e.g. the
+       shop grid's right-column Add button) even though the solid circle
+       itself never touched it, looking like an overlap bug. */
+    box-shadow: 0 0 0 8px rgba(37, 211, 102, 0);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);

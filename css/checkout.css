@@ -83,6 +83,10 @@
   .form-grid {
     grid-template-columns: 1fr; /* Single column on mobile */
   }
+
+  .checkout-form-card__title {
+    text-align: center;
+  }
 }
 
 /* --- SUMMARY LIST --- */
