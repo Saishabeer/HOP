@@ -87,23 +87,40 @@ document.addEventListener('DOMContentLoaded', () => {
   // whatever scrolls underneath it (product card Add buttons, form inputs,
   // etc). Hide it while actively scrolling and bring it back once the user
   // pauses, so it never blocks a tap/type target for more than a moment.
+  //
+  // It also stays hidden for the first REVEAL_THRESHOLD px of scroll. On
+  // real phones the usable viewport (after browser chrome/address bar) is
+  // often much shorter than it is in desktop device emulators, so at
+  // scroll=0 -- i.e. the instant the page loads, before the user has
+  // touched anything -- row 1 of a product grid can already sit right at
+  // the bottom of the screen, directly under this button's fixed position.
+  // Keeping it hidden until the user has scrolled a little means it's never
+  // on screen at the one moment it can't be dodged.
   if (waFloat) {
+    const REVEAL_THRESHOLD = 240;
     let hideTimer = null;
     let lastScrollY = window.scrollY;
+
+    const applyVisibility = () => {
+      if (window.scrollY < REVEAL_THRESHOLD) {
+        waFloat.classList.add('whatsapp-float--hidden');
+      } else {
+        waFloat.classList.remove('whatsapp-float--hidden');
+      }
+    };
+    applyVisibility();
 
     window.addEventListener('scroll', () => {
       const currentY = window.scrollY;
       const scrollingDown = currentY > lastScrollY;
       lastScrollY = currentY;
 
-      if (scrollingDown) {
+      if (currentY < REVEAL_THRESHOLD || scrollingDown) {
         waFloat.classList.add('whatsapp-float--hidden');
       }
 
       clearTimeout(hideTimer);
-      hideTimer = setTimeout(() => {
-        waFloat.classList.remove('whatsapp-float--hidden');
-      }, 400);
+      hideTimer = setTimeout(applyVisibility, 400);
     }, { passive: true });
   }
 });
