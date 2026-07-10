@@ -352,30 +352,6 @@
   }
 }
 
-@media (max-width: 480px) {
-  /* Right-column cards sit directly under the fixed WhatsApp button at rest
-     (scroll-hide only helps while actively scrolling) -- nudge just their
-     own Add button left, inside the card's existing padding, instead of
-     reserving a grid-wide gutter that left a visible empty column. */
-  .catalog-grid .product-card:nth-child(2n) .product-card__footer {
-    padding-right: 45px;
-  }
-
-  /* That padding leaves less room for the price in the right column, so a
-     discounted price (current + strikethrough old, forced onto one line to
-     keep every card's footer the same height) needs to be a bit more
-     compact there to avoid clipping. */
-  .catalog-grid .product-card:nth-child(2n) .price-display__old {
-    font-size: 0.68rem;
-  }
-  .catalog-grid .product-card:nth-child(2n) .price-display__current {
-    font-size: 0.95rem;
-  }
-  .catalog-grid .product-card:nth-child(2n) .price-display {
-    gap: 1px;
-  }
-}
-
 /* --- PAGINATION --- */
 .pagination {
   margin-top: 48px;

@@ -190,6 +190,14 @@
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--primary-rose);
+  /* Same graceful-truncation safety net as .price-display__old -- a hard
+     overflow:hidden clip with no ellipsis reads as a rendering bug (e.g. a
+     clipped "0" looking like a "C"); an ellipsis at least signals on
+     purpose if a price value is ever wide enough to not fully fit. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .price-display__old {
